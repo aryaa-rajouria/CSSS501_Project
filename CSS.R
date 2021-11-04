@@ -1,19 +1,30 @@
 
 # READ IN DATA  
 
-# NAWS data
 library(readxl)
-Naws_Data <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_NIOSH_2009_2010 (1)/Naws_Data.xlsx")
-View(Naws_Data)
-Data <- Naws_Data 
 
+#Adding Nios Data 
+Nios_Data <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_NIOSH_2009_2010 (1)/Naws_Data.xlsx")
+Data1 <- Nios_Data 
+
+#Adding NAWS Data questionnaire variables in alphabetical order from "A" through "E" covering the period 1989 through 2018 
+NAWS_A2E191 <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_A2E191.xlsx")
+Data2 <-NAWS_A2E191
+
+#questionnaire variables in alphabetical order from "F" through "Y" covering the period 1989 through 2018
+NAWS_F2Y191 <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_F2Y191.xlsx")
+View(NAWS_F2Y191)
+Data3 <- NAWS_F2Y191
 
 # MERGE DATA (Nov. 8, 2021) [Aryaa]
 
-  # NAWS data with NIOSH data
+  # NAWS data with NIOSH data aka Final Data
+#merged data 1 and two by FWID
+merge1 <- merge(Data1, Data2, by="FWID")
+#merged the above data with Data 3 (Note obs for both merges are < than for original)
+fdata <- merge(merge1, Data3, by="FWID")
 
 # TIMELINE CHECK-IN (Nov. 8, 2021) [Aryaa & Aminah] Update the group
-
 
 #---------------------------------------------------
 #  CLEAN DATA & CREATE OUTCOME VARIABLES (check for missing, NAs)
