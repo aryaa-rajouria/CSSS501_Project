@@ -4,17 +4,14 @@
 library(readxl)
 
 #Adding Nios Data 
-Nios_Data <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_NIOSH_2009_2010 (1)/Naws_Data.xlsx")
-Data1 <- Nios_Data 
+Data1 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_NIOSH_2009_2010.csv")
 
 #Adding NAWS Data questionnaire variables in alphabetical order from "A" through "E" covering the period 1989 through 2018 
-NAWS_A2E191 <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_A2E191.xlsx")
-Data2 <-NAWS_A2E191
+Data2 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_A2E191.csv")
 
 #questionnaire variables in alphabetical order from "F" through "Y" covering the period 1989 through 2018
-NAWS_F2Y191 <- read_excel("C:/Users/aryaa/OneDrive/CSSS510/Project/NAWS_F2Y191.xlsx")
-View(NAWS_F2Y191)
-Data3 <- NAWS_F2Y191
+Data3 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_F2Y191.csv")
+
 
 # MERGE DATA (Nov. 8, 2021) [Aryaa]
 
