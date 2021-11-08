@@ -28,7 +28,17 @@ fdata <- merge(merge1, Data3, by="FWID")
 # (Nov. 12, 2021)
 
   # Self-rated health (ordered logit) [Aminah]
+
   # elevated depressive symptoms (binary) [Aryaa]
+    #are we making an index? Just did a binary synopsis for var MC10 in NIOS
+    #Relates to MC10: In the past seven (7) days, have you felt depressed? 
+      #. = missing; 0 = No; 1 = Yes 
+    library(dplyr)
+    fdata <- rename(fdata, eds = MC10)
+    #counting up eds in the final merged data: note, NOT seperated by years (2009/2010)
+    fdata %>% count(eds)
+    #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
+
   # elevated psychological demands (binary) [Courtney]
   # low control (binary) [Katherine]
   # job strain (binary) [Aminah]
