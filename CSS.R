@@ -68,8 +68,8 @@ for (i in 1:length(smd)) { #for every element of smd,
 
 table(lowcont)
 sum(is.na(lowcont))
-#11 na, 3144 0s (no low control) and 536 1s (yes low control)
-#missing (.) is coded as na
+# low control - 3144 0s (no), 536 1s (yes), 0 (na)
+# missing (.) is coded as na
 
   # job strain (binary) [Aminah]
 
@@ -85,6 +85,52 @@ sum(is.na(lowcont))
   # B08 - asks how well the respondent reads English 
   # B20 - asks about language spoken to respondent as a child 
   # B21 - asks what languages the respondent speaks as an adult 
+
+# English attainment: [Katherine]
+# B03A - asks respondent whether she attended English/ESL classes or school in the U.S. (binary)
+
+fdata <- rename(fdata, esl_class = B03ax)
+table(fdata$esl_class)
+sum(is.na(fdata$esl_class))
+# attended esl classes - 3091 0s (no), 598 1s (yes), 2 (na)
+
+library(data.table)
+# B07 - asks how well the respondent speaks English
+# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+
+# B08 - asks how well the respondent reads English 
+# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+
+# B20 - asks about language spoken to respondent as a child 
+# B20a (english) and B20b (spanish) seem to be missing from the dataset
+
+# B21 - asks what languages the respondent speaks as an adult 
+fdata <- setnames(fdata, old = c('B21a','B21b','B21c','B21d','B21e','B21f','B21z'),
+                  new = c('aa_english','aa_spanish','aa_creole','aa_mixtec','aa_kanjobal',
+                          'aa_zapotec','aa_other'))
+
+sum(is.na(fdata$aa_english)) 
+table(fdata$aa_english) 
+# english - 1243 (false), 2447 (true), 2 (na)
+sum(is.na(fdata$aa_spanish))
+table(fdata$aa_spanish) 
+# spanish - 518 (false), 3171 (true), 2 (na)
+sum(is.na(fdata$aa_creole))
+table(fdata$aa_creole) 
+# creole - 3677 (false), 14 (true), 0 (na)
+sum(is.na(fdata$aa_mixtex))
+table(fdata$aa_mixtec) 
+# creole - 3616 (false), 75 (true), 0 (na)
+sum(is.na(fdata$aa_kanjobal))
+table(fdata$aa_kanjobal) 
+# kanjobal - 3680 (false), 11 (true), 0 (na)
+sum(is.na(fdata$aa_zapotec))
+table(fdata$aa_zapotec) 
+# zapotec - 3661 (false), 30 (true), 0 (na)
+sum(is.na(fdata$aa_other))
+table(fdata$aa_other) 
+# zapotec - 3537 (false), 154 (true), 0 (na)
+
   # B24 - asks which language the respondent is most comfortable conversing in 
 
 # Income - G01 - respondent’s total income in the past year in USD [Aminah]
