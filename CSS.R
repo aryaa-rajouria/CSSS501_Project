@@ -51,6 +51,25 @@ fdata <- merge(merge1, Data3, by="FWID")
 
   # elevated psychological demands (binary) [Courtney]
   # low control (binary) [Katherine]
+
+smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
+lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
+for (i in 1:length(smd)) { #for every element of smd,
+  if (!is.na(smd[i])) {  #if element of smd is not na
+    if(smd[i] <= 2) { #and if element of smd is less than or equal to 2
+      if (all(fdata[i, c('MD1', 'MD2', 'MD3', 'MD4')] < 2)) { #or if MD1, MD2, MD3, and MD4 is less than 2
+        lowcont[i] <- 1 #then it is coded as 1 for low control.
+      }
+    }
+  } else { #if element of smd is na, then it is coded as na
+    lowcont[i] <- NA
+  }
+}
+
+table(lowcont)
+sum(is.na(lowcont))
+#11 na, 3144 0s and 536 1s
+
   # job strain (binary) [Aminah]
 
 # CREATE COVARIATES (comment about the number of missing)
