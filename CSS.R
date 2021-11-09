@@ -68,7 +68,8 @@ for (i in 1:length(smd)) { #for every element of smd,
 
 table(lowcont)
 sum(is.na(lowcont))
-#11 na, 3144 0s and 536 1s
+#11 na, 3144 0s (no low control) and 536 1s (yes low control)
+#missing (.) is coded as na
 
   # job strain (binary) [Aminah]
 
