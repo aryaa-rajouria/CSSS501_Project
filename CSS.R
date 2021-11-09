@@ -28,6 +28,16 @@ fdata <- merge(merge1, Data3, by="FWID")
 # (Nov. 12, 2021)
 
   # Self-rated health (ordered logit) [Aminah]
+    # MG1 In general, how would you describe your health? Would you say...
+      # . -> missing *Decide whether to drop single NA for 2010*
+      # 1 -> Excellent - 747
+      # 2 -> Good - 2115
+      # 3 -> Fair - 811
+      # 4 -> Poor - 14
+      # 7 -> Don't know - 3 
+      library(dplyr)
+      fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
+      fdata %>% count(srh) # Calling counts of each of the responses 
 
   # elevated depressive symptoms (binary) [Aryaa]
     #are we making an index? Just did a binary synopsis for var MC10 in NIOS
@@ -42,6 +52,26 @@ fdata <- merge(merge1, Data3, by="FWID")
 
   # elevated psychological demands (binary) [Courtney]
   # low control (binary) [Katherine]
+
+smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
+lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
+for (i in 1:length(smd)) { #for every element of smd,
+  if (!is.na(smd[i])) {  #if element of smd is not na
+    if(smd[i] <= 2) { #and if element of smd is less than or equal to 2
+      if (all(fdata[i, c('MD1', 'MD2', 'MD3', 'MD4')] < 2)) { #or if MD1, MD2, MD3, and MD4 is less than 2
+        lowcont[i] <- 1 #then it is coded as 1 for low control.
+      }
+    }
+  } else { #if element of smd is na, then it is coded as na
+    lowcont[i] <- NA
+  }
+}
+
+table(lowcont)
+sum(is.na(lowcont))
+# low control - 3144 0s (no), 536 1s (yes), 0 (na)
+# missing (.) is coded as na
+
   # job strain (binary) [Aminah]
 
 # CREATE COVARIATES (comment about the number of missing)
@@ -77,6 +107,52 @@ fdata <- merge(merge1, Data3, by="FWID")
   # B08 - asks how well the respondent reads English 
   # B20 - asks about language spoken to respondent as a child 
   # B21 - asks what languages the respondent speaks as an adult 
+
+# English attainment: [Katherine]
+# B03A - asks respondent whether she attended English/ESL classes or school in the U.S. (binary)
+
+fdata <- rename(fdata, esl_class = B03ax)
+table(fdata$esl_class)
+sum(is.na(fdata$esl_class))
+# attended esl classes - 3091 0s (no), 598 1s (yes), 2 (na)
+
+library(data.table)
+# B07 - asks how well the respondent speaks English
+# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+
+# B08 - asks how well the respondent reads English 
+# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+
+# B20 - asks about language spoken to respondent as a child 
+# B20a (english) and B20b (spanish) seem to be missing from the dataset
+
+# B21 - asks what languages the respondent speaks as an adult 
+fdata <- setnames(fdata, old = c('B21a','B21b','B21c','B21d','B21e','B21f','B21z'),
+                  new = c('aa_english','aa_spanish','aa_creole','aa_mixtec','aa_kanjobal',
+                          'aa_zapotec','aa_other'))
+
+sum(is.na(fdata$aa_english)) 
+table(fdata$aa_english) 
+# english - 1243 (false), 2447 (true), 2 (na)
+sum(is.na(fdata$aa_spanish))
+table(fdata$aa_spanish) 
+# spanish - 518 (false), 3171 (true), 2 (na)
+sum(is.na(fdata$aa_creole))
+table(fdata$aa_creole) 
+# creole - 3677 (false), 14 (true), 0 (na)
+sum(is.na(fdata$aa_mixtex))
+table(fdata$aa_mixtec) 
+# creole - 3616 (false), 75 (true), 0 (na)
+sum(is.na(fdata$aa_kanjobal))
+table(fdata$aa_kanjobal) 
+# kanjobal - 3680 (false), 11 (true), 0 (na)
+sum(is.na(fdata$aa_zapotec))
+table(fdata$aa_zapotec) 
+# zapotec - 3661 (false), 30 (true), 0 (na)
+sum(is.na(fdata$aa_other))
+table(fdata$aa_other) 
+# zapotec - 3537 (false), 154 (true), 0 (na)
+
   # B24 - asks which language the respondent is most comfortable conversing in 
 
 # Income - G01 - respondent’s total income in the past year in USD [Aminah]
