@@ -29,12 +29,12 @@ fdata <- merge(merge1, Data3, by="FWID")
 
   # Self-rated health (ordered logit) [Aminah]
     # MG1 In general, how would you describe your health? Would you say...
-      # . -> missing *Decide whether to drop NAs*
-      # 1 -> Excellent
-      # 2 -> Good
-      # 3 -> Fair
-      # 4 -> Poor
-      # 7 -> Don't know
+      # . -> missing *Decide whether to drop single NA for 2010*
+      # 1 -> Excellent - 747
+      # 2 -> Good - 2115
+      # 3 -> Fair - 811
+      # 4 -> Poor - 14
+      # 7 -> Don't know - 3 
       library(dplyr)
       fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
       fdata %>% count(srh) # Calling counts of each of the responses 
