@@ -159,11 +159,24 @@ table(fdata$aa_other)
 
 # Health insurance: [Aryaa]
   # A21A - asks whether respondent has health insurance 
-    fdata <- rename(fdata, health_in = A21A)
+    fdata <- rename(fdata, health_in = A21a)
     #counting up health_in in the final merged data
     fdata %>% count(health_in)
-  # A23A - indicates who pays for the respondent’s health insurance 
-
+    
+    
+  # A23A1-A23A7 - indicates who pays for the respondent’s (farmworker) health insurance 
+    #rename different types of health insurance payment info
+    fdata <- rename(fdata, fwk_pays = A23a1, spouse_pays = A23a2, empl_pays = A23a3, semp_pays = A23a4,
+                    gvt_pays = A23a5, other_pays = A23a6, parent_pays = A23a7)
+    fdata %>% count(fwk_pays) #No: 901; Yes: 210; NA: 2571
+    fdata %>% count (spouse_pays) #No, 1084; Yes: 36; NA: 2571
+    fdata %>% count (empl_pays) #No: 573; Yes: 547, NA: 2571
+    fdata %>% count (semp_pays) #No: 1017, Yes: 103, NA: 2571
+    fdata %>% count (gvt_pays) #No: 820, Yes: 300; NA: 2571
+    fdata %>% count (other_pays) #No: 1071; Yes: 49; NA: 2571
+    fdata %>% count (parent_pays) #Yes: 18; NA: 3673
+    #do we want to create a specific type of matrix with this data? What might be the best way to mutate this?
+    
 # Documented status: [Courtney]
   # LEGAPPL - indicates status of legal application 
   # MIGTYPE - indicates type of migrant 
@@ -173,7 +186,6 @@ table(fdata$aa_other)
 # NQ10L - indicates a respondent’s main difficulty accessing health care in the U.S. centers on being “undocumented” and “not treated well” as a result [Aminah]
 
     
-#Creating a new dataset with only the selected covariates (created above): 
-    #Aryaa can do this on Wednesday either during or before our meeting
+#Creating a new dataset with only the selected covariates (created above)
     
 # [TIMELINE CHECK-IN ON WED. NOV 10, 2021]
