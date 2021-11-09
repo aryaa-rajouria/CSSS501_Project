@@ -28,6 +28,16 @@ fdata <- merge(merge1, Data3, by="FWID")
 # (Nov. 12, 2021)
 
   # Self-rated health (ordered logit) [Aminah]
+    # MG1 In general, how would you describe your health? Would you say...
+      # . -> missing *Decide whether to drop NAs*
+      # 1 -> Excellent
+      # 2 -> Good
+      # 3 -> Fair
+      # 4 -> Poor
+      # 7 -> Don't know
+      library(dplyr)
+      fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
+      fdata %>% count(srh) # Calling counts of each of the responses 
 
   # elevated depressive symptoms (binary) [Aryaa]
     #are we making an index? Just did a binary synopsis for var MC10 in NIOS
