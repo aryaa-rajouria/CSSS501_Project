@@ -38,6 +38,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     #counting up eds in the final merged data: note, NOT seperated by years (2009/2010)
     fdata %>% count(eds)
     #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
+    #are we getting rid of NAs? 
 
   # elevated psychological demands (binary) [Courtney]
   # low control (binary) [Katherine]
@@ -46,6 +47,27 @@ fdata <- merge(merge1, Data3, by="FWID")
 # CREATE COVARIATES (comment about the number of missing)
 
 # Age - AGE - respondent age  [Aryaa]
+    fdata <- rename(fdata, age = AGE)
+    #recategorizing fdata
+    fdata <- fdata %>% mutate(age = case_when(age < 20 ~ "14-19",
+                                     age < 30 ~ "20-29",
+                                     age < 40 ~ "30-39",
+                                     age < 50 ~ "40-49",
+                                     age < 60 ~ "50-59", 
+                                     age < 70 ~ "60-69",
+                                     age < 80 ~ "70-79",
+                                     age < 90 ~ "80-89"))
+    fdata %>% count(age) 
+   # age   n
+   # 14-19 162
+   # 20-29 986
+   # 30-39 994
+   # 40-49 824
+   # 50-59 491
+   # 60-69 205
+   # 70-79  27
+   # 80-89   1
+   #  <NA>   1
 
 # Gender - GENDER - respondent gender [Courtney]
 
@@ -61,6 +83,9 @@ fdata <- merge(merge1, Data3, by="FWID")
 
 # Health insurance: [Aryaa]
   # A21A - asks whether respondent has health insurance 
+    fdata <- rename(fdata, health_in = A21A)
+    #counting up health_in in the final merged data
+    fdata %>% count(health_in)
   # A23A - indicates who pays for the respondent’s health insurance 
 
 # Documented status: [Courtney]
@@ -71,4 +96,8 @@ fdata <- merge(merge1, Data3, by="FWID")
 
 # NQ10L - indicates a respondent’s main difficulty accessing health care in the U.S. centers on being “undocumented” and “not treated well” as a result [Aminah]
 
+    
+#Creating a new dataset with only the selected covariates (created above): 
+    #Aryaa can do this on Wednesday either during or before our meeting
+    
 # [TIMELINE CHECK-IN ON WED. NOV 10, 2021]
