@@ -67,6 +67,11 @@ fdata <- merge(merge1, Data3, by="FWID")
         MJ1b + MJ2b >= 2 ~ 1,
         MJ1b + MJ2b  < 2 ~ 0))  # score of 2 or higher means epd = true
     
+      # check count
+        # epd    n
+        # 1   0 2540
+        # 2   1 1134
+        # 3  NA   17
     
     
     
@@ -119,7 +124,17 @@ sum(is.na(lowcont))
    #  <NA>   1
 
 # Gender - GENDER - respondent gender [Courtney]
-
+  fdata <- fdata %>% mutate(
+    gender = case_when(
+      GENDER == 0 ~ "man",
+      GENDER == 1 ~ "woman"))
+    
+  # check count
+      # gender    n
+      # man 3052
+      # woman  639
+    
+    
 # English attainment: [Katherine]
   # B03A - asks respondent whether she attended English/ESL classes or school in the U.S.
   # B07 - asks how well the respondent speaks English
