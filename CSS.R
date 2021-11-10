@@ -157,31 +157,58 @@ sum(is.na(lowcont))
     
     
 # English attainment: [Katherine]
-  # B03A - asks respondent whether she attended English/ESL classes or school in the U.S.
-  # B07 - asks how well the respondent speaks English
-  # B08 - asks how well the respondent reads English 
-  # B20 - asks about language spoken to respondent as a child 
-  # B21 - asks what languages the respondent speaks as an adult 
 
-# English attainment: [Katherine]
-# B03A - asks respondent whether she attended English/ESL classes or school in the U.S. (binary)
+  # B03A - asks respondent whether she attended English/ESL classes or school in the U.S.
 
 fdata <- rename(fdata, esl_class = B03ax)
 table(fdata$esl_class)
 sum(is.na(fdata$esl_class))
 # attended esl classes - 3091 0s (no), 598 1s (yes), 2 (na)
 
-library(data.table)
-# B07 - asks how well the respondent speaks English
-# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+  # B07 - asks how well the respondent speaks English
 
-# B08 - asks how well the respondent reads English 
-# NEED TO FIND QUESTIONAIRE TO CONFIRM ANSWER CHOICES
+fdata <- rename(fdata, eng_speak = B07)
+table(fdata$eng_speak)
+sum(is.na(fdata$eng_speak))
+# english speaking skill - 1223 1s (not at all), 1220 2s (a little), 355 3s (somewhat), 887 4s (well), 6 (na)
 
-# B20 - asks about language spoken to respondent as a child 
-# B20a (english) and B20b (spanish) seem to be missing from the dataset
+  # B08 - asks how well the respondent reads English 
 
-# B21 - asks what languages the respondent speaks as an adult 
+fdata <- rename(fdata, eng_read = B08)
+table(fdata$eng_read)
+sum(is.na(fdata$eng_read))
+#english reading skill - 1687 1s (not at all), 908 2s (a little), 241 3s (somewhat), 847 4s (well), 8 (na)
+
+  # B20 - asks about language spoken to respondent as a child 
+
+fdata <- setnames(fdata, old = c('B20a','B20b','B20c','B20d','B20e','B20f','B20z'),
+                  new = c('ac_english','ac_spanish','ac_creole','ac_mixtec','ac_kanjobal',
+                          'ac_zapotec','ac_other'))
+
+sum(is.na(fdata$ac_english)) 
+table(fdata$ac_english) 
+# english - 2962 (false), 727 (true), 2 (na)
+sum(is.na(fdata$ac_spanish))
+table(fdata$ac_spanish) 
+# spanish - 669 (false), 3022 (true), 0 (na)
+sum(is.na(fdata$ac_creole))
+table(fdata$ac_creole) 
+# creole - 3679 (false), 12 (true), 0 (na)
+sum(is.na(fdata$ac_mixtex))
+table(fdata$ac_mixtec) 
+# mixtec - 3617 (false), 74 (true), 0 (na)
+sum(is.na(fdata$ac_kanjobal))
+table(fdata$ac_kanjobal) 
+# kanjobal - 3679 (false), 12 (true), 0 (na)
+sum(is.na(fdata$ac_zapotec))
+table(fdata$ac_zapotec)
+# zapotec - 3660 (false), 31 (true), 0 (na)
+sum(is.na(fdata$ac_other))
+table(fdata$ac_other) 
+# other - 3537 (false), 154 (true), 0 (na)
+
+  # B21 - asks what languages the respondent speaks as an adult 
+
 fdata <- setnames(fdata, old = c('B21a','B21b','B21c','B21d','B21e','B21f','B21z'),
                   new = c('aa_english','aa_spanish','aa_creole','aa_mixtec','aa_kanjobal',
                           'aa_zapotec','aa_other'))
@@ -197,7 +224,7 @@ table(fdata$aa_creole)
 # creole - 3677 (false), 14 (true), 0 (na)
 sum(is.na(fdata$aa_mixtex))
 table(fdata$aa_mixtec) 
-# creole - 3616 (false), 75 (true), 0 (na)
+# mixtec - 3616 (false), 75 (true), 0 (na)
 sum(is.na(fdata$aa_kanjobal))
 table(fdata$aa_kanjobal) 
 # kanjobal - 3680 (false), 11 (true), 0 (na)
@@ -206,9 +233,13 @@ table(fdata$aa_zapotec)
 # zapotec - 3661 (false), 30 (true), 0 (na)
 sum(is.na(fdata$aa_other))
 table(fdata$aa_other) 
-# zapotec - 3537 (false), 154 (true), 0 (na)
+# other - 3537 (false), 154 (true), 0 (na)
 
-  # B24 - asks which language the respondent is most comfortable conversing in 
+  # B24 - asks which language the respondent is most comfortable conversing in
+
+fdata <- rename(fdata, dom_lang = B24)
+table(fdata$dom_lang)
+sum(is.na(fdata$dom_lang))
 
 # Income - G01 - respondent’s total income in the past year in USD [Aminah]
 
@@ -244,6 +275,11 @@ table(fdata$aa_other)
     
 
 # MIXEDFAM - indicates a respondent is not documented in the U.S. but has children who are U.S. citizens [Katherine]
+
+fdata <- rename(fdata, mix_fam = MixedFam)
+table(fdata$mix_fam)
+sum(is.na(fdata$mix_fam))
+# mixed fam - 3017 0s (no), 674 1s (yes), 0 missing
 
 # NQ10L - indicates a respondent’s main difficulty accessing health care in the U.S. centers on being “undocumented” and “not treated well” as a result [Aminah]
 
