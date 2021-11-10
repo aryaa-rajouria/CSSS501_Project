@@ -214,6 +214,13 @@ table(fdata$aa_other)
 # Documented status: [Courtney]
   # LEGAPPL - indicates status of legal application 
   # MIGTYPE - indicates type of migrant 
+    fdata <- fdata %>% mutate(
+      doc_status = case_when(
+        currstat ==1 ~ "Citizen",
+        currstat ==2 ~ "Green card",
+        currstat ==3 ~ "Other work authorization",
+        currstat ==4 ~ "Unauthorized"))
+    
 
 # MIXEDFAM - indicates a respondent is not documented in the U.S. but has children who are U.S. citizens [Katherine]
 
