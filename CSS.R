@@ -98,6 +98,27 @@ sum(is.na(lowcont))
 
   # job strain (binary) [Aminah]
 
+    # What exactly are we trying to capture with job strain, particularly as a binary outcome?
+    # From what I've seen, job strain is typically operationalized using job demand and job control
+    # We might be able to gauge job strain using excessive work as a proxy and collapsing it into a binary outcome
+      # MJ2 In your current FW ..how often are you asked to do an excessive amount of work?
+        # . -> Missing - 3   *Consider omitting as NAs*
+        # 0 -> Never - 2868
+        # 1 -> Sometimes - 722
+        # 2 -> Very Often - 64
+        # 3 -> Always - 23
+        # 5 -> Does not understand - 3  *Consider omitting as NAs*
+        # 7 -> Don't know - 8  *Consider omitting as NAs*
+  library(dplyr)
+  fdata <- rename(fdata, strain = MJ2) # Renaming the variable to reflect job strain 
+  fdata %>% count(strain) # Calling counts of each of the responses 
+
+  #fdata <- fdata %>% mutate(strain = case_when(   # Coercing strain into a binary, commented out for now because we can coerce it into a binary in our models as well 
+  #strain == 0 ~ 0,
+  #strain == 1 ~ 1,
+  #strain == 2 ~ 1,
+  #strain == 3 ~ 1)) 
+
 # CREATE COVARIATES (comment about the number of missing)
 
 # Age - AGE - respondent age  [Aryaa]
@@ -226,6 +247,10 @@ table(fdata$aa_other)
 
 # NQ10L - indicates a respondent’s main difficulty accessing health care in the U.S. centers on being “undocumented” and “not treated well” as a result [Aminah]
 
+  # NQ10L When you want to get health care in the U.S. what are the main difficulties you face?
+  # I'm "undocumented' they don't treat me well
+
+      # This column doesn't appear in our data. What should we do? 
     
 #Creating a new dataset with only the selected covariates (created above)
     
