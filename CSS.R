@@ -2,6 +2,7 @@
 # READ IN DATA  
 
 library(readxl)
+library(tidyverse)
 
 #Adding Nios Data 
 Data1 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_NIOSH_2009_2010.csv")
@@ -35,7 +36,6 @@ fdata <- merge(merge1, Data3, by="FWID")
       # 3 -> Fair - 811
       # 4 -> Poor - 14
       # 7 -> Don't know - 3 
-      library(dplyr)
       fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
       fdata %>% count(srh) # Calling counts of each of the responses 
 
@@ -50,8 +50,27 @@ fdata <- merge(merge1, Data3, by="FWID")
     #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
     #are we getting rid of NAs? 
 
+    
+    
   # elevated psychological demands (binary) [Courtney]
-  # low control (binary) [Katherine]
+    # this indicator sums up responses to MJ1 and MJ2
+    fdata <- fdata %>% mutate(
+      MJ1b = case_when(
+      MJ1 ==5 ~ NA_integer_,  # 5 = doesn't understand, change to NA
+      MJ1 ==7 ~ NA_integer_,  # 7 = don't know, change to NA
+      TRUE ~ MJ1),
+      MJ2b = case_when(
+        MJ2 ==5 ~ NA_integer_,  # 5 = doesn't understand, change to NA
+        MJ2 ==7 ~ NA_integer_,  # 7 = don't know, change to NA
+        TRUE ~ MJ2),
+      epd = case_when(
+        MJ1b + MJ2b >= 2 ~ 1,
+        MJ1b + MJ2b  < 2 ~ 0))  # score of 2 or higher means epd = true
+    
+    
+    
+    
+ # low control (binary) [Katherine]
 
 smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
 lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
