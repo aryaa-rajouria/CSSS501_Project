@@ -77,10 +77,15 @@ fdata <- merge(merge1, Data3, by="FWID")
     
  # low control (binary) [Katherine]
 
+
 smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
 lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
 for (i in 1:length(smd)) { #for every element of smd,
-  if (!is.na(smd[i])) {  #if element of smd is not na
+  if (fdata$MD1[i] %in% c(5, 6, 7) | fdata$MD2[i] %in% c(5, 6, 7) | 
+      fdata$MD3[i] %in% c(5, 6, 7) | fdata$MD4[i] %in% c(5, 6, 7)) {
+    lowcont[i] <- NA; #changes responses of 5, 6, 7 to NAs for MD1-4
+  } # if you implement check above then make below and else if statmenet
+  else if (!is.na(smd[i])) {  #if element of smd is not na
     if(smd[i] <= 2) { #and if element of smd is less than or equal to 2
       if (all(fdata[i, c('MD1', 'MD2', 'MD3', 'MD4')] < 2)) { #or if MD1, MD2, MD3, and MD4 is less than 2
         lowcont[i] <- 1 #then it is coded as 1 for low control.
@@ -91,9 +96,12 @@ for (i in 1:length(smd)) { #for every element of smd,
   }
 }
 
+# Above code effectively throws out observations where respondant 
+# (5) didn't understand, (6) refused, or (7) didn't know
+
 table(lowcont)
 sum(is.na(lowcont))
-# low control - 3144 0s (no), 536 1s (yes), 0 (na)
+# low control - 2909 0s (no), 536 1s (yes), 246 (na)
 # missing (.) is coded as na
 
   # job strain (binary) [Aminah]
