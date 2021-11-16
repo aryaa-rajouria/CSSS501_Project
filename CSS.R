@@ -368,6 +368,14 @@ fdata <- fdata %>%
 sum(is.na(fdata$hh_social_assist)) 
 table(fdata$hh_social_assist)
 # Social assistance - 1882 (0), 1807 (1), 2 (na)
+
+# MIGTYPE2 - Migrant type including newcomer
+
+# I think that we can keep this variable named as is, but we may need to change it to categorical later
+
+sum(is.na(fdata$MIGTYPE2)) 
+table(fdata$MIGTYPE2)
+# MIGTYPE2 - 280 (FTC - follow the crop), 86 (newcomer), 2945 (settled), 3 (na)
     
 #Creating a new dataset with only the selected covariates (created above)
     
