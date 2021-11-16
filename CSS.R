@@ -295,6 +295,79 @@ sum(is.na(fdata$mix_fam))
   # I'm "undocumented' they don't treat me well
 
       # This column doesn't appear in our data. What should we do? 
+
+# G04 - Asks if anyone in their household has recieved the following social services in the last 2 years
+
+fdata <- setnames(fdata, old = c('G04px','G04B','G04C','G04D','G04E','G04fx','G04gx','G04H','G04I','G04J',
+                                 'G04K','G04L','G04M','G04N'), 
+                  new = c('hh_TANF','hh_food_stamps','hh_dis_ins','hh_unemp_ins','hh_soc_sec',
+                          'hh_vet_pay','hh_gen_as', 'hh_li_house', 'hh_phealth_cl','hh_medicaid',
+                          'hh_wic', 'hh_dis_rel','hh_leg_ser','hh_other'))
+
+# Changing responses with "don't know" (95) to NA
+
+fdata$hh_dis_ins[fdata$hh_dis_ins == 95] <- NA
+fdata$hh_unemp_ins[fdata$hh_unemp_ins == 95] <- NA
+fdata$hh_soc_sec[fdata$hh_soc_sec == 95] <- NA
+fdata$hh_vet_pay[fdata$hh_vet_pay == 95] <- NA
+fdata$hh_gen_as[fdata$hh_gen_as == 95] <- NA
+fdata$hh_li_house[fdata$hh_li_house == 95] <- NA
+fdata$hh_gen_as[fdata$hh_gen_as == 95] <- NA
+fdata$hh_other[fdata$hh_other == 95] <- NA
+
+
+sum(is.na(fdata$hh_TANF)) 
+table(fdata$hh_TANF) 
+# TANF - 3676 (false), 13 (true), 2 (na)
+sum(is.na(fdata$hh_food_stamps)) 
+table(fdata$hh_food_stamps) 
+# Food stamps - 3301 (0), 836 (1), 2 (na)
+sum(is.na(fdata$hh_dis_ins)) 
+table(fdata$hh_dis_ins)
+# Disability insurance - 3620 (0), 67 (1), 4 (na)
+sum(is.na(fdata$hh_unemp_ins)) 
+table(fdata$hh_unemp_ins)
+# Unemployment insurance - 3620 (0), 67 (1), 4 (na)
+sum(is.na(fdata$hh_soc_sec)) 
+table(fdata$hh_soc_sec)
+# Social security - 3608 (0), 79 (1), 4 (na)
+sum(is.na(fdata$hh_vet_pay)) 
+table(fdata$hh_vet_pay)
+# Veterans pay - 3678 (0), 9 (1), 4 (na)
+sum(is.na(fdata$hh_gen_as)) 
+table(fdata$hh_gen_as)
+# General assistance/welfare - 3664 (0), 23 (1), 4 (na)
+sum(is.na(fdata$hh_li_house)) 
+table(fdata$hh_li_house)
+# Low income housing - 3654 (0), 33 (1), 4 (na)
+sum(is.na(fdata$hh_phealth_cl)) 
+table(fdata$hh_phealth_cl)
+# Public health clinic - 3517 (false), 172 (true), 2 (na)
+sum(is.na(fdata$hh_medicaid)) 
+table(fdata$hh_medicaid)
+# Medicaid - 2503 (false), 1186 (true), 2 (na)
+sum(is.na(fdata$hh_wic)) 
+table(fdata$hh_wic)
+# WIC - 3046 (false), 643 (true), 2 (na)
+sum(is.na(fdata$hh_dis_rel)) 
+table(fdata$hh_dis_rel)
+# Disaster relief - 3672 (false), 17 (true), 2 (na)
+sum(is.na(fdata$hh_leg_ser)) 
+table(fdata$hh_leg_ser)
+# Legal service - 3687 (false), 2 (true), 2 (na)
+sum(is.na(fdata$hh_other)) 
+table(fdata$hh_other)
+# Other - 3660 (0), 27 (1), 4 (na)
+
+#Creating new variable with 0/1 for whether they recieve ANY of the above social assistance
+fdata <- fdata %>%
+  mutate(hh_social_assist = ifelse(hh_TANF | hh_food_stamps==1 | hh_dis_ins==1 | hh_unemp_ins==1 |
+      hh_soc_sec==1 | hh_vet_pay==1 | hh_gen_as==1 | hh_li_house==1 | hh_phealth_cl |
+      hh_medicaid | hh_wic | hh_dis_rel | hh_leg_ser | hh_other==1, 1, 0))
+
+sum(is.na(fdata$hh_social_assist)) 
+table(fdata$hh_social_assist)
+# Social assistance - 1882 (0), 1807 (1), 2 (na)
     
 #Creating a new dataset with only the selected covariates (created above)
     
