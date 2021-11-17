@@ -49,9 +49,64 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata %>% count(eds)
     #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
     #are we getting rid of NAs? 
-
+    fdata$MC10
+    df$Rate2 = df$Rate
+  
     
+    df$Marks[df$Names == "Sita"] <- 25
     
+  library(tidyverse) 
+  library(dplyr)
+    
+    #m=10
+ #for(i in 1:m){
+  #    fdata$new_mcdays[i] = fdata$MCDays[i]
+   # }
+  # I know this can be done with loops but none of them are working so doing it this way for now: will figure this out!!! 
+    
+    fdata$new_mcdays1 = fdata$MCDays1
+    fdata$new_mcdays2 = fdata$MCDays2
+    fdata$new_mcdays3 = fdata$MCDays3
+    fdata$new_mcdays4 = fdata$MCDays4
+    fdata$new_mcdays5 = fdata$MCDays5
+    fdata$new_mcdays6 = fdata$MCDays6
+    fdata$new_mcdays7 = fdata$MCDays7
+    fdata$new_mcdays8 = fdata$MCDays8
+    fdata$new_mcdays9 = fdata$MCDays9
+    fdata$new_mcdays10 = fdata$MCDays10
+    
+ #regrouping mcdays1   
+    fdata$new_mcdays1[fdata$new_mcdays1==2] <- 1
+    fdata$new_mcdays1[fdata$new_mcdays1==3] <- 2
+    fdata$new_mcdays1[fdata$new_mcdays1==4] <- 2
+    fdata$new_mcdays1[fdata$new_mcdays1==5] <- 3
+    fdata$new_mcdays1[fdata$new_mcdays1==6] <- 3
+    fdata$new_mcdays1[fdata$new_mcdays1==7] <- 3
+    
+    #fdata$new_mcdays2 = fdata$MCDays2 
+    #iters <- 7
+    #output <- numeric(iters)
+    #for (i in 1:iters) {
+     # output[i] <- fdata$new_mcdays1[fdata$new_mcdays1==2]}
+    
+    fdata$new_mcdays2[fdata$new_mcdays2==2] <- 1
+    fdata$new_mcdays2[fdata$new_mcdays2==3] <- 2
+    fdata$new_mcdays2[fdata$new_mcdays2==4] <- 2
+    fdata$new_mcdays2[fdata$new_mcdays2==5] <- 3
+    fdata$new_mcdays2[fdata$new_mcdays3==6] <- 3
+    fdata$new_mcdays2[fdata$new_mcdays3==7] <- 3
+    
+    #depf <- fdata$new_mcdays1 + fdata$new_mcdays2 + fdata$new_mcdays3 + fdata$new_mcdays4 + fdata$new_mcdays5 +
+      fdata$new_mcdays6 + fdata$new_mcdays7 + fdata$new_mcdays8 + fdata$new_mcdays9 + fdata$new_mcdays10
+      #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
+    det <- fdata$new_mcdays2
+    co <- rep(0, length(det)) #lowcont created as an empty shell of 0s, to be filled by following:
+    for (i in 1:length(det)) { #for every element of det,
+      if (fdata$new_mcdays2[i] < 3) {co[i] <- 1}
+      if (fdata$new_mcdays2[i] <5) {co[i] <-2}
+      else if (fdata$new_mcdays2[i] >4) {co[i] <-3}
+      
+     
   # elevated psychological demands (binary) [Courtney]
     # this indicator sums up responses to MJ1 and MJ2
     fdata <- fdata %>% mutate(
