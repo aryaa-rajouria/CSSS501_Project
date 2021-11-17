@@ -77,10 +77,15 @@ fdata <- merge(merge1, Data3, by="FWID")
     
  # low control (binary) [Katherine]
 
+
 smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
 lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
 for (i in 1:length(smd)) { #for every element of smd,
-  if (!is.na(smd[i])) {  #if element of smd is not na
+  if (fdata$MD1[i] %in% c(5, 6, 7) | fdata$MD2[i] %in% c(5, 6, 7) | 
+      fdata$MD3[i] %in% c(5, 6, 7) | fdata$MD4[i] %in% c(5, 6, 7)) {
+    lowcont[i] <- NA; #changes responses of 5, 6, 7 to NAs for MD1-4
+  } # if you implement check above then make below and else if statmenet
+  else if (!is.na(smd[i])) {  #if element of smd is not na
     if(smd[i] <= 2) { #and if element of smd is less than or equal to 2
       if (all(fdata[i, c('MD1', 'MD2', 'MD3', 'MD4')] < 2)) { #or if MD1, MD2, MD3, and MD4 is less than 2
         lowcont[i] <- 1 #then it is coded as 1 for low control.
@@ -91,9 +96,12 @@ for (i in 1:length(smd)) { #for every element of smd,
   }
 }
 
+# Above code effectively throws out observations where respondant 
+# (5) didn't understand, (6) refused, or (7) didn't know
+
 table(lowcont)
 sum(is.na(lowcont))
-# low control - 3144 0s (no), 536 1s (yes), 0 (na)
+# low control - 2909 0s (no), 536 1s (yes), 246 (na)
 # missing (.) is coded as na
 
   # job strain (binary) [Aminah]
@@ -272,6 +280,87 @@ sum(is.na(fdata$mix_fam))
   # I'm "undocumented' they don't treat me well
 
       # This column doesn't appear in our data. What should we do? 
+
+# G04 - Asks if anyone in their household has recieved the following social services in the last 2 years
+
+fdata <- setnames(fdata, old = c('G04px','G04B','G04C','G04D','G04E','G04fx','G04gx','G04H','G04I','G04J',
+                                 'G04K','G04L','G04M','G04N'), 
+                  new = c('hh_TANF','hh_food_stamps','hh_dis_ins','hh_unemp_ins','hh_soc_sec',
+                          'hh_vet_pay','hh_gen_as', 'hh_li_house', 'hh_phealth_cl','hh_medicaid',
+                          'hh_wic', 'hh_dis_rel','hh_leg_ser','hh_other'))
+
+# Changing responses with "don't know" (95) to NA
+
+fdata$hh_dis_ins[fdata$hh_dis_ins == 95] <- NA
+fdata$hh_unemp_ins[fdata$hh_unemp_ins == 95] <- NA
+fdata$hh_soc_sec[fdata$hh_soc_sec == 95] <- NA
+fdata$hh_vet_pay[fdata$hh_vet_pay == 95] <- NA
+fdata$hh_gen_as[fdata$hh_gen_as == 95] <- NA
+fdata$hh_li_house[fdata$hh_li_house == 95] <- NA
+fdata$hh_gen_as[fdata$hh_gen_as == 95] <- NA
+fdata$hh_other[fdata$hh_other == 95] <- NA
+
+
+sum(is.na(fdata$hh_TANF)) 
+table(fdata$hh_TANF) 
+# TANF - 3676 (false), 13 (true), 2 (na)
+sum(is.na(fdata$hh_food_stamps)) 
+table(fdata$hh_food_stamps) 
+# Food stamps - 3301 (0), 836 (1), 2 (na)
+sum(is.na(fdata$hh_dis_ins)) 
+table(fdata$hh_dis_ins)
+# Disability insurance - 3620 (0), 67 (1), 4 (na)
+sum(is.na(fdata$hh_unemp_ins)) 
+table(fdata$hh_unemp_ins)
+# Unemployment insurance - 3620 (0), 67 (1), 4 (na)
+sum(is.na(fdata$hh_soc_sec)) 
+table(fdata$hh_soc_sec)
+# Social security - 3608 (0), 79 (1), 4 (na)
+sum(is.na(fdata$hh_vet_pay)) 
+table(fdata$hh_vet_pay)
+# Veterans pay - 3678 (0), 9 (1), 4 (na)
+sum(is.na(fdata$hh_gen_as)) 
+table(fdata$hh_gen_as)
+# General assistance/welfare - 3664 (0), 23 (1), 4 (na)
+sum(is.na(fdata$hh_li_house)) 
+table(fdata$hh_li_house)
+# Low income housing - 3654 (0), 33 (1), 4 (na)
+sum(is.na(fdata$hh_phealth_cl)) 
+table(fdata$hh_phealth_cl)
+# Public health clinic - 3517 (false), 172 (true), 2 (na)
+sum(is.na(fdata$hh_medicaid)) 
+table(fdata$hh_medicaid)
+# Medicaid - 2503 (false), 1186 (true), 2 (na)
+sum(is.na(fdata$hh_wic)) 
+table(fdata$hh_wic)
+# WIC - 3046 (false), 643 (true), 2 (na)
+sum(is.na(fdata$hh_dis_rel)) 
+table(fdata$hh_dis_rel)
+# Disaster relief - 3672 (false), 17 (true), 2 (na)
+sum(is.na(fdata$hh_leg_ser)) 
+table(fdata$hh_leg_ser)
+# Legal service - 3687 (false), 2 (true), 2 (na)
+sum(is.na(fdata$hh_other)) 
+table(fdata$hh_other)
+# Other - 3660 (0), 27 (1), 4 (na)
+
+#Creating new variable with 0/1 for whether they recieve ANY of the above social assistance
+fdata <- fdata %>%
+  mutate(hh_social_assist = ifelse(hh_TANF | hh_food_stamps==1 | hh_dis_ins==1 | hh_unemp_ins==1 |
+      hh_soc_sec==1 | hh_vet_pay==1 | hh_gen_as==1 | hh_li_house==1 | hh_phealth_cl |
+      hh_medicaid | hh_wic | hh_dis_rel | hh_leg_ser | hh_other==1, 1, 0))
+
+sum(is.na(fdata$hh_social_assist)) 
+table(fdata$hh_social_assist)
+# Social assistance - 1882 (0), 1807 (1), 2 (na)
+
+# MIGTYPE2 - Migrant type including newcomer
+
+# I think that we can keep this variable named as is, but we may need to change it to categorical later
+
+sum(is.na(fdata$MIGTYPE2)) 
+table(fdata$MIGTYPE2)
+# MIGTYPE2 - 280 (FTC - follow the crop), 86 (newcomer), 2945 (settled), 3 (na)
     
 #Creating a new dataset with only the selected covariates (created above)
     
