@@ -1,8 +1,9 @@
 
-# READ IN DATA  
+# READ DATA AND MERGE--------------------------------
 
 library(readxl)
 library(tidyverse)
+library(sjlabelled) #this package allows us to give variables full labels
 
 #Adding Nios Data 
 Data1 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_NIOSH_2009_2010.csv")
@@ -24,7 +25,13 @@ fdata <- merge(merge1, Data3, by="FWID")
 
 # TIMELINE CHECK-IN (Nov. 8, 2021) [Aryaa & Aminah] Update the group
 
-#---------------------------------------------------
+
+
+
+
+# CLEAN DATA ---------------------------------------------------
+
+
 #  CLEAN DATA & CREATE OUTCOME VARIABLES (check for missing, NAs)
 # (Nov. 12, 2021)
 
@@ -313,15 +320,113 @@ sum(is.na(fdata$dom_lang))
     
 # Documented status: [Courtney]
   # LEGAPPL - indicates status of legal application 
-  # MIGTYPE - indicates type of migrant 
+ 
     fdata <- fdata %>% mutate(
       doc_status = case_when(
         currstat ==1 ~ "Citizen",
         currstat ==2 ~ "Green card",
         currstat ==3 ~ "Other work authorization",
         currstat ==4 ~ "Unauthorized"))
+  
     
+    # MIGTYPE - indicates type of migrant
+    fdata <- fdata %>% mutate(
+      migrant = case_when(
+        MIGRANT ==0 ~ "Non-migrant",
+        MIGRANT ==1 ~ "Migrant"))
 
+      fdata <- fdata %>% mutate(
+        migrant_1 = case_when(
+          MIGTYPE ==0 ~ "Non-migrant",
+          MIGTYPE ==1 ~ "FTC",
+          MIGTYPE ==2 ~ "Shuttle"))
+        
+            
+        fdata <- fdata %>% mutate(
+          migrant_2 = case_when(
+            MIGTYPE2 =="FTC" ~ "FTC",
+            MIGTYPE2 =="NEWCOMER" ~ "Newcomer",
+            MIGTYPE2 =="SETTLED" ~ "Settled",
+            MIGTYPE2 =="SHUTTLE" ~ "Shuttle"))
+        
+
+        
+        # ETHNICITY - 
+        fdata <- fdata %>% mutate(
+          ethnicity = case_when(
+            B01 ==1 ~ "Mexican-American",
+            B01 ==2 ~ "Mexican",
+            B01 ==3 ~ "Mexican-American",
+            B01 ==4 ~ "Other Hispanic",
+            B01 ==5 ~ "Other Hispanic",
+            B01 ==7 ~ "Not Hispianic or Latino"))  
+          
+          
+          
+          # RACE - 
+          fdata <- fdata %>% mutate(
+            race = case_when(
+              B02 ==1 ~ "White",
+              B02 ==2 ~ "Black AA",
+              B02 ==4 ~ "Am Indian, Indigenous",
+              B02 ==5 ~ "Other", # 5 Asian cases
+              B02 ==6 ~ "Other", # 11 Native HI P.I cases
+              B02 ==7 ~ "Other")) 
+            
+         
+          # EDCUATION - Attended any HS or GED equivalent school in US
+          fdata <- fdata %>% mutate(
+            edu_hs = case_when(
+              B03ex ==0 ~ "No",
+              B03ex ==1 ~ "Yes"))
+            
+          # EDCUATION - Attended any college in US
+          fdata <- fdata %>% mutate(
+            edu_coll = case_when(
+              B03fx ==0 ~ "No",
+              B03fx ==1 ~ "Yes"))
+          
+
+          # EDCUATION - Attended any English classes in US
+          fdata <- fdata %>% mutate(
+            edu_esl = case_when(
+              B03ax ==0 ~ "No",
+              B03ax ==1 ~ "Yes"))         
+            
+
+          # INCOME - FAMILY'S TOTAL INCOME
+          fdata <- fdata %>% mutate(
+            income_family = case_when(
+              G03 <=3 ~ "$0-2,499",
+              G03 >3 & G03 <=6  ~ "$2,500-9,999",
+              G03 >6 & G03 <=9  ~ "$9,999-17,499",
+              G03 >9 & G03 <=12  ~ "$17,499-29,999",
+              G03 >12 & G03 <97  ~ "$30,000",
+              G03==97 ~ "Don't know"),
+            income_family = factor(income_family,
+                                   levels = c("$2,500-9,999",
+                                              "$9,999-17,499",
+                                              "$17,499-29,999",
+                                              "$30,000",
+                                              "Don't know")))
+              
+          # INCOME - personal total income
+          fdata <- fdata %>% mutate(
+            income = case_when(
+              G01 <=3 ~ "$0-2,499",
+              G01 >3 & G01 <=6  ~ "$2,500-9,999",
+              G01 >6 & G01 <=9  ~ "$9,999-17,499",
+              G01 >9 & G01 <=12  ~ "$17,499-29,999",
+              G01 >12 & G01 <95  ~ "$30,000",
+              G01==95 ~ "Don't know"),
+            income = factor(income,
+                                   levels = c("$2,500-9,999",
+                                              "$9,999-17,499",
+                                              "$17,499-29,999",
+                                              "$30,000",
+                                              "Don't know")))
+          
+          
 # MIXEDFAM - indicates a respondent is not documented in the U.S. but has children who are U.S. citizens [Katherine]
 
 fdata <- rename(fdata, mix_fam = MixedFam)
