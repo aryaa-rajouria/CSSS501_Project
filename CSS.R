@@ -96,22 +96,86 @@ fdata <- merge(merge1, Data3, by="FWID")
     #for (i in 1:iters) {
      # output[i] <- fdata$new_mcdays1[fdata$new_mcdays1==2]}
     
+  #regrouping mcdays2
     fdata$new_mcdays2[fdata$new_mcdays2==2] <- 1
     fdata$new_mcdays2[fdata$new_mcdays2==3] <- 2
     fdata$new_mcdays2[fdata$new_mcdays2==4] <- 2
     fdata$new_mcdays2[fdata$new_mcdays2==5] <- 3
-    fdata$new_mcdays2[fdata$new_mcdays3==6] <- 3
-    fdata$new_mcdays2[fdata$new_mcdays3==7] <- 3
+    fdata$new_mcdays2[fdata$new_mcdays2==6] <- 3
+    fdata$new_mcdays2[fdata$new_mcdays2==7] <- 3
     
-    #depf <- fdata$new_mcdays1 + fdata$new_mcdays2 + fdata$new_mcdays3 + fdata$new_mcdays4 + fdata$new_mcdays5 +
+    #regrouping mcdays3
+    fdata$new_mcdays3[fdata$new_mcdays3==2] <- 1
+    fdata$new_mcdays3[fdata$new_mcdays3==3] <- 2
+    fdata$new_mcdays3[fdata$new_mcdays3==4] <- 2
+    fdata$new_mcdays3[fdata$new_mcdays3==5] <- 3
+    fdata$new_mcdays3[fdata$new_mcdays3==6] <- 3
+    fdata$new_mcdays3[fdata$new_mcdays3==7] <- 3
+    
+    #regrouping mcdays4
+    fdata$new_mcdays4[fdata$new_mcdays4==2] <- 1
+    fdata$new_mcdays4[fdata$new_mcdays4==3] <- 2
+    fdata$new_mcdays4[fdata$new_mcdays4==4] <- 2
+    fdata$new_mcdays4[fdata$new_mcdays4==5] <- 3
+    fdata$new_mcdays4[fdata$new_mcdays4==6] <- 3
+    fdata$new_mcdays4[fdata$new_mcdays4==7] <- 3
+    
+    #regrouping mcdays5
+    fdata$new_mcdays5[fdata$new_mcdays5==2] <- 1
+    fdata$new_mcdays5[fdata$new_mcdays5==3] <- 2
+    fdata$new_mcdays5[fdata$new_mcdays5==4] <- 2
+    fdata$new_mcdays5[fdata$new_mcdays5==5] <- 3
+    fdata$new_mcdays5[fdata$new_mcdays5==6] <- 3
+    fdata$new_mcdays5[fdata$new_mcdays5==7] <- 3
+    
+    #regrouping mcdays6
+    fdata$new_mcdays6[fdata$new_mcdays6==2] <- 1
+    fdata$new_mcdays6[fdata$new_mcdays6==3] <- 2
+    fdata$new_mcdays6[fdata$new_mcdays6==4] <- 2
+    fdata$new_mcdays6[fdata$new_mcdays6==5] <- 3
+    fdata$new_mcdays6[fdata$new_mcdays6==6] <- 3
+    fdata$new_mcdays6[fdata$new_mcdays6==7] <- 3
+    
+    #regrouping mcdays7
+    fdata$new_mcdays7[fdata$new_mcdays7==2] <- 1
+    fdata$new_mcdays7[fdata$new_mcdays7==3] <- 2
+    fdata$new_mcdays7[fdata$new_mcdays7==4] <- 2
+    fdata$new_mcdays7[fdata$new_mcdays7==5] <- 3
+    fdata$new_mcdays7[fdata$new_mcdays7==6] <- 3
+    fdata$new_mcdays7[fdata$new_mcdays7==7] <- 3
+    
+    #regrouping mcdays8
+    fdata$new_mcdays8[fdata$new_mcdays8==2] <- 1
+    fdata$new_mcdays8[fdata$new_mcdays8==3] <- 2
+    fdata$new_mcdays8[fdata$new_mcdays8==4] <- 2
+    fdata$new_mcdays8[fdata$new_mcdays8==5] <- 3
+    fdata$new_mcdays8[fdata$new_mcdays8==6] <- 3
+    fdata$new_mcdays8[fdata$new_mcdays8==7] <- 3
+    
+    #regrouping mcdays9
+    fdata$new_mcdays9[fdata$new_mcdays9==2] <- 1
+    fdata$new_mcdays9[fdata$new_mcdays9==3] <- 2
+    fdata$new_mcdays9[fdata$new_mcdays9==4] <- 2
+    fdata$new_mcdays9[fdata$new_mcdays9==5] <- 3
+    fdata$new_mcdays9[fdata$new_mcdays9==6] <- 3
+    fdata$new_mcdays9[fdata$new_mcdays9==7] <- 3
+    
+    #regrouping mcdays10
+    fdata$new_mcdays10[fdata$new_mcdays10==2] <- 1
+    fdata$new_mcdays10[fdata$new_mcdays10==3] <- 2
+    fdata$new_mcdays10[fdata$new_mcdays10==4] <- 2
+    fdata$new_mcdays10[fdata$new_mcdays10==5] <- 3
+    fdata$new_mcdays10[fdata$new_mcdays10==6] <- 3
+    fdata$new_mcdays10[fdata$new_mcdays10==7] <- 3
+    
+    # Adding new column based on the sum of other columns:
+    fdata <- fdata %>% rowwise() %>%
+      mutate(eds_total = sum(c_across(new_mcdays1:new_mcdays10)))
+    
+    eds <- fdata$new_mcdays1 + fdata$new_mcdays2 + fdata$new_mcdays3 + fdata$new_mcdays4 + fdata$new_mcdays5 +
       fdata$new_mcdays6 + fdata$new_mcdays7 + fdata$new_mcdays8 + fdata$new_mcdays9 + fdata$new_mcdays10
       #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
-    det <- fdata$new_mcdays2
-    co <- rep(0, length(det)) #lowcont created as an empty shell of 0s, to be filled by following:
-    for (i in 1:length(det)) { #for every element of det,
-      if (fdata$new_mcdays2[i] < 3) {co[i] <- 1}
-      if (fdata$new_mcdays2[i] <5) {co[i] <-2}
-      else if (fdata$new_mcdays2[i] >4) {co[i] <-3}
+
       
      
   # elevated psychological demands (binary) [Courtney]
