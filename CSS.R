@@ -35,16 +35,29 @@ fdata <- merge(merge1, Data3, by="FWID")
 #  CLEAN DATA & CREATE OUTCOME VARIABLES (check for missing, NAs)
 # (Nov. 12, 2021)
 
-  # Self-rated health (ordered logit) [Aminah]
-    # MG1 In general, how would you describe your health? Would you say...
-      # . -> missing *Decide whether to drop single NA for 2010*
+# Self-rated health (ordered logit) [Aminah]
+    # MG1 In general, how would you describe your health? Would you say... --> categorical 
+      # . -> missing - 1 NA from 2010
       # 1 -> Excellent - 747
       # 2 -> Good - 2115
       # 3 -> Fair - 811
       # 4 -> Poor - 14
       # 7 -> Don't know - 3 
+
+      library(dplyr)
       fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
+      
+      fdata$srh[fdata$srh == 7] <- NA # Recoding 3 "Don't Know" cases into NAs
+      
       fdata %>% count(srh) # Calling counts of each of the responses 
+        
+      # Checking counts 
+        #  srh    n
+      #    1     747
+      #    2    2115
+      #    3    811
+      #    4     14
+      #   NA      4    
 
   # elevated depressive symptoms (binary) [Aryaa]
     #are we making an index? Just did a binary synopsis for var MC10 in NIOS
