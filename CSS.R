@@ -245,26 +245,27 @@ sum(is.na(lowcont))
 
   # job strain (binary) [Aminah]
 
-    # What exactly are we trying to capture with job strain, particularly as a binary outcome?
-    # From what I've seen, job strain is typically operationalized using job demand and job control
-    # We might be able to gauge job strain using excessive work as a proxy and collapsing it into a binary outcome
-      # MJ2 In your current FW ..how often are you asked to do an excessive amount of work?
-        # . -> Missing - 3   *Consider omitting as NAs*
-        # 0 -> Never - 2868
-        # 1 -> Sometimes - 722
-        # 2 -> Very Often - 64
-        # 3 -> Always - 23
-        # 5 -> Does not understand - 3  *Consider omitting as NAs*
-        # 7 -> Don't know - 8  *Consider omitting as NAs*
+# Job strain was coded as 1 if both the elevated psychological demands and low control variables were coded as 1. 
+# Otherwise, job strain was coded as 0.
+# Represents the other outcomes put together.
+  
   library(dplyr)
-  fdata <- rename(fdata, strain = MJ2) # Renaming the variable to reflect job strain 
-  fdata %>% count(strain) # Calling counts of each of the responses 
 
-  #fdata <- fdata %>% mutate(strain = case_when(   # Coercing strain into a binary, commented out for now because we can coerce it into a binary in our models as well 
-  #strain == 0 ~ 0,
-  #strain == 1 ~ 1,
-  #strain == 2 ~ 1,
-  #strain == 3 ~ 1)) 
+  fdata <- fdata %>% mutate(
+    job_strain = case_when(
+      epd == 1 ~ 1, # If epd is 1, job strain is 1
+      epd != 1 ~ 0, # If epd is not 1, job strain is 0
+      lowcont == 1 ~ 1, # If low control is 1, job strain is 1 
+      lowcont != 1 ~ 0)) # If low control is not 1, job strain is 0 
+
+  fdata %>% count(job_strain) # Calling counts of each of the responses 
+
+  # Checking counts 
+  #    job_strain    n
+         #     0   2556
+         #     1   1134
+         #     NA    1   *What to do with single NA?* 
+  
 
 # CREATE COVARIATES (comment about the number of missing)
 
