@@ -253,10 +253,8 @@ sum(is.na(lowcont))
 
   fdata <- fdata %>% mutate(
     job_strain = case_when(
-      epd == 1 ~ 1, # If epd is 1, job strain is 1
-      epd != 1 ~ 0, # If epd is not 1, job strain is 0
-      lowcont == 1 ~ 1, # If low control is 1, job strain is 1 
-      lowcont != 1 ~ 0)) # If low control is not 1, job strain is 0 
+      epd == 1 & lowcont == 1 ~ 1, # If epd and lowcont is 1, job strain is 1
+      epd != 1 & lowcont != 1 ~ 0)) # If epd and lowcont are not equal to 1, job strain is 0 
 
   fdata %>% count(job_strain) # Calling counts of each of the responses 
 
