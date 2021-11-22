@@ -172,11 +172,24 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata <- fdata %>% rowwise() %>%
       mutate(eds_total = sum(c_across(new_mcdays1:new_mcdays10)))
     
-    eds <- fdata$new_mcdays1 + fdata$new_mcdays2 + fdata$new_mcdays3 + fdata$new_mcdays4 + fdata$new_mcdays5 +
-      fdata$new_mcdays6 + fdata$new_mcdays7 + fdata$new_mcdays8 + fdata$new_mcdays9 + fdata$new_mcdays10
-      #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
-
-      
+    fdata %>% count(eds_total) 
+    
+    #eds_total     n
+    #<dbl> <int>
+     # 1        12     1
+    #2        14     3
+    #3        16     1
+    #4        20     1
+    #5        24     1
+    #6        28     1
+    #7        29     1
+    #8        30     1
+    #9        NA  3681
+    
+    fdata <- fdata %>% rowwise() %>%
+      mutate(eds_check = sum(c_across(MCDays1:MCDays10)))
+    
+    fdata %>% count(eds_check) 
      
   # elevated psychological demands (binary) [Courtney]
     # this indicator sums up responses to MJ1 and MJ2
