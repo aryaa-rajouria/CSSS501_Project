@@ -603,13 +603,18 @@ sum(is.na(fdata$hh_social_assist))
 table(fdata$hh_social_assist)
 # Social assistance - 1882 (0), 1807 (1), 2 (na)
 
-# MIGTYPE2 - Migrant type including newcomer
+# Married/living together
 
-# I think that we can keep this variable named as is, but we may need to change it to categorical later
+fdata <- fdata %>% mutate(
+  married.LT = case_when(
+    A05 ==1 ~ "Single",
+    A05 ==2 ~ "Married/LT",
+    A05 ==3 ~ "Sep/Divorced"))
 
-sum(is.na(fdata$MIGTYPE2)) 
-table(fdata$MIGTYPE2)
-# MIGTYPE2 - 280 (FTC - follow the crop), 86 (newcomer), 2945 (settled), 3 (na)
+sum(is.na(fdata$married.LT)) 
+table(fdata$married.LT)
+# 2337 married, 231 sep/divorced, 1122 single, 1 na
+
     
 #Creating a new dataset with only the selected covariates (created above)
     
