@@ -483,6 +483,44 @@ sum(is.na(fdata$dom_lang))
               B03ax ==1 ~ "Yes"))         
             
 
+          # EDCUATION - Attended any job in US
+          fdata <- fdata %>% mutate(
+            edu_job = case_when(
+              B03dx ==0 ~ "No",
+              B03dx ==1 ~ "Yes")) 
+          
+          
+        # ANY EDUCATION IN UW
+          fdata <- fdata %>% mutate(edu_any_usa = "No")
+          fdata <- fdata %>% mutate(
+            edu_any_usa = case_when(
+              edu_esl ==1 ~ "Yes",
+              edu_hs ==1 ~ "Yes",
+              edu_job ==1 ~ "Yes",
+              edu_coll ==1 ~ "Yes",
+              TRUE ~ edu_any_usa))          
+            
+          
+          
+          # Highest education
+          fdata <- fdata %>% mutate(edu_any_usa = "No")
+          fdata <- fdata %>% mutate(
+            edu_any_usa = case_when(
+              edu_esl ==1 ~ "Yes",
+              edu_hs ==1 ~ "Yes",
+              edu_job ==1 ~ "Yes",
+              edu_coll ==1 ~ "Yes",
+              TRUE ~ edu_any_usa))          
+  
+          
+          # highest grade finsihed
+          
+          fdata <- fdata %>% mutate(
+            edu_highest = case_when(
+              A09 >=6  ~ "Primary",
+              A09 >=12 ~ "Secondary",
+              A09 >12 ~ "Any College"))                  
+          
           # INCOME - FAMILY'S TOTAL INCOME
           fdata <- fdata %>% mutate(
             income_family = case_when(
