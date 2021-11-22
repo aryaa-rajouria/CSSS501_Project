@@ -23,6 +23,14 @@ merge1 <- merge(Data1, Data2, by="FWID")
 #merged the above data with Data 3 (Note obs for both merges are < than for original)
 fdata <- merge(merge1, Data3, by="FWID")
 
+# saving the file
+
+write.csv(fdata,'fdata.csv')
+
+# Switch out for your file path
+
+fdata <- read.csv('/Users/katherine/fdata.csv')
+
 # TIMELINE CHECK-IN (Nov. 8, 2021) [Aryaa & Aminah] Update the group
 
 
