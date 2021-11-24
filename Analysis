@@ -22,10 +22,10 @@ m1a <- glm(eds ~ age + gender + doc_status + income_family + MARRIED + migrant_2
 mod_summary_sign <- summary(m1a)
 exp(coef(m1a))
 
-m1a_res <- cbind(exp(coef(m1a)), summary(m1a)$coefficients[,4])  
+
+m1a_res <- round(cbind(exp(coef(m1a)), summary(m1a)$coefficients[,4]),3)
 colnames(m1a_res) <- c('Odds', 'P-value')
 m1a_res
-
 
 
 
