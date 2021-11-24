@@ -2,69 +2,31 @@
 # ANALYSIS 
 
 fdata <- read.csv('/Users/katherine/fdata2.csv')
+options(scipen = 999)
 
-# Primary analysis 
+# PRIMARY ANALYSIS
 
-# QUESTIONS - Some of these covariates seem closely related (e.g., those related to language)
-# Can we have these together
+# MODEL 1AA: DOES EDS DECREASE SRH?
 
-# 1. How do the following psycho-social factors affect self-rated physical health? 
-  
-#  M1a: Elevated depressive symptoms (binary)
+m1aa <- polr(as.factor(srh) ~ eds + age + gender + doc_status + income + married.LT + race + edu_highest
+             + eng_read, data=fdata, method='probit')
+summary(m1aa)
+ci_m1aa <- confint(m1aa)
+
+m1aa_res <- round(exp(cbind(OR = coef(m1aa), ci_m1aa)),3)
+m1aa_res
+
+MODEL 1A: WHAT FACTORS MAKE SOMEONE MORE LIKELY TO HAVE EDS?
 
 m1a <- glm(eds ~ age + gender + doc_status + income_family + MARRIED + migrant_2 + race + edu_highest + dom_lang + eng_read, data=fdata, family=binomial)
-summary(m1a)
+mod_summary_sign <- summary(m1a)
+exp(coef(m1a))
 
-# Notes: Education substantially improves fit, MARRIED (instead of married.LT)
-# , income_family (instead of income), eng_speak (instead of eng_read)
-# and migrant_2 (instead of migrant_1) creates slightly better fit. edu_any is not found
+m1a_res <- cbind(exp(coef(m1a)), summary(m1a)$coefficients[,4])  
+colnames(m1a_res) <- c('Odds', 'P-value')
+m1a_res
 
-# Results: Reported at p<0.05
 
-# Lesser probability of have elevated depressive symptoms if...
-# Black, Other, or White (compared to indigenous)
-
-# Higher probability of having elevated depressive symptoms
-# Having a family income of 9,999-17,499 (compared to reference category of 17,999-29,999), 
-# Woman (compared to man), 
-# Having a primary school education (compared to some college)
-# Having a higher english reading skill
-
-# M1b: Elevated psychological demands (binary)
-
-m1b <- glm(epd ~ age + gender + doc_status + income + MARRIED + migrant_2 + race + edu_highest + dom_lang + eng_read, data=fdata, family=binomial)
-summary(m1b)
-
-# Note: Personal income is better than family income here, married.LT better than MARRIED
-
-# Lesser probability of having elevating pyschological demands
-# Being settled or shuttled (compared to FTC)
-# Having spanish as dominant language
-# Being Black, compared to indigenous
-
-# Higher probability of having elevated psychological demands
-# Having a personal income of 9,999-17,499 (compared to 17,999-29,999)
-
-# M1c: Low control (binary)
-
-m1c <- glm(lowcont ~ age + gender + doc_status + income + MARRIED + migrant_1 + race + edu_highest + eng_read, data=fdata, family=binomial)
-summary(m1c)
-
-# Note: MARRIED (instead of married.LT), eng_read (instead of eng_speak), 
-# income (instead of income_family), migrant_1 (instead of migrant_2), 
-# eliminating dom_lang create better fit
-
-# Lesser probability of having low control
-# Being married (compared to not married)
-# Being a non-migrant (compared to FTC)
-
-# Higher probability of having low control
-# Having other work authoriation or being unauthorized (compared to citizen)
-# Having an income of 2,500-9,999 or 9,999-17,499 (compared to 17,499-29,999)
-# Being Black (compared to indigenous)
-
-# M1d: Job strain (binary or ordered categorical)
-# JOB STRAIN NOT RUNNING
 
 
 
