@@ -16,6 +16,13 @@ ci_m1aa <- confint(m1aa)
 m1aa_res <- round(exp(cbind(OR = coef(m1aa), ci_m1aa)),3)
 m1aa_res
 
+# Computing p-values (note: estimates are no longer in odds)
+
+summary_table <- coef(summary(m1aa))
+pval <- pnorm(abs(summary_table[, "t value"]),lower.tail = FALSE)* 2
+summary_table <- cbind(summary_table, "p value" = round(pval,3))
+summary_table
+
 MODEL 1A: WHAT FACTORS MAKE SOMEONE MORE LIKELY TO HAVE EDS?
 
 m1a <- glm(eds ~ age + gender + doc_status + income_family + MARRIED + migrant_2 + race + edu_highest + dom_lang + eng_read, data=fdata, family=binomial)
