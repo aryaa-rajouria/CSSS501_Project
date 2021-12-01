@@ -183,6 +183,9 @@ fdata <- merge(merge1, Data3, by="FWID")
     
     # Adding new column based on the sum of other columns:
     fdata <- fdata %>% rowwise() %>%
+      mutate(eds_total=0)
+    
+    fdata <- fdata %>% rowwise() %>%
       mutate(eds_total = sum(c_across(new_mcdays1:new_mcdays10)))
     
     fdata %>% count(eds_total) 
