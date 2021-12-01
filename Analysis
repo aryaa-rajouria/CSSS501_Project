@@ -2,11 +2,11 @@
 
 # TO DO LIST: 
 
-# - FIGURE OUT HOW TO PROPERLY TEST THE PROPORTIONAL ODDS ASSUMPTION FOR M1aa-dd
+# - FIGURE OUT HOW TO PROPERLY TEST THE PROPORTIONAL ODDS ASSUMPTION FOR M1a-d
 # - WOULD BE HELPFUL TO FIGURE OUT HOW TO MAKE A CORRELATION MATRIX - TO SHOW WHAT CHARACTERISTICS OCCUR TOGETHER
 # - FIGURE OUT HOW TO MAKE FIGURES WITH OUR RESULTS, SIMCF CURRENTLY NOT WORKING WITH OUR TYPE OF DATA
-# - FIGURE OUT HOW TO PERFORM A MORE RIGOROUS GOODNESS OF FIT TEST, CURRENTLY GOING OFF OF AIC VALUE
 # - IT MIGHT BE INTERESTING TO DISAGGREGATE THE 2ND SET OF ANALYSES BY GENDER - WOMEN HAVE A HIGHER ODDS OF POOR MENTAL HEALTH ACROSS ALL PYSCHO-SOCIAL FACTORS
+# - PROPERLY MAKE TABLES
 
 # ANALYSIS 
 
@@ -166,6 +166,321 @@ fdata %>% mutate(obs_idx=row_number()) %>%select(obs_idx, all_of(cols_to_include
 # table of social assistance by doc status
 table1 <- table(fdata$doc_status, fdata$hh_social_assist)
 colnames(table1) <- c('no', 'yes')
+
+# ANALYSIS 
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# ANALYSIS 
+
+library(brant)
+library(MASS)
+library(simcf)
+library(VGAM)
+library(RColorBrewer)
+library(verification)
+library(tile)
+library(ggplot2)
+library(tidyr)
+library(dplyr) # when you load MASS and dplyr select is overwritten
+
+options(scipen = 999)
+fdata <- read.csv('/Users/katherine/fdata5.csv')
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 1. How do the following psycho-social factors affect self-rated physical health? 
+
+# M1a: Does eds decrease self rated health?
+
+m1a <- polr(as.factor(srh) ~ eds + age + gender + doc_status + income + married.LT + race + edu_highest
+             + eng_read + migrant_2 + children, data=fdata, method="probit")
+summary(m1a)
+
+# testing the proportional odds assumption using a brant test 
+# NOTE: Not sure if this test is totally accurate, since it works but gives a warning
+# Proportional odds assumption holds
+brant(m1a)
+
+# computing CI
+ci_m1a <- confint(m1a)
+
+m1a_res <- round(exp(cbind(OR = (coef(m1a)), ci_m1a)),3)
+m1a_res
+
+# computing the p-value if we want it
+summary_table <- coef(summary(m1a))
+pval <- pnorm(abs(summary_table[, "t value"]),lower.tail = FALSE)* 2
+summary_table <- cbind(summary_table, "p value" = round(pval,3))
+summary_table
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# M1b: Does epd decrease self rated health?
+
+m1b <- polr(as.factor(srh) ~ epd + age + gender + doc_status + income + married.LT + race + edu_highest
+             + eng_read + migrant_2 + children, data=fdata, method='probit')
+summary(m1b)
+brant(m1b)
+
+# computing CI
+ci_m1b <- confint(m1b)
+
+m1b_res <- round(exp(cbind(OR = (coef(m1b)), ci_m1b)),3)
+m1b_res
+
+# computing the p-value if we want it
+summary_table <- coef(summary(m1b))
+pval <- pnorm(abs(summary_table[, "t value"]),lower.tail = FALSE)* 2
+summary_table <- cbind(summary_table, "p value" = round(pval,3))
+summary_table
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# M1c: Does lowcont decrease self rated health?
+
+m1c <- polr(as.factor(srh) ~ lowcont + age + gender + doc_status + income + married.LT + race + edu_highest
+             + eng_read + migrant_2 + children, data=fdata, method='probit')
+summary(m1c)
+brant(m1c)
+
+# computing CI
+ci_m1c <- confint(m1c)
+
+m1c_res <- round(exp(cbind(OR = (coef(m1c)), ci_m1c)),3)
+m1c_res
+
+# computing the p-value if we want it
+summary_table <- coef(summary(m1c))
+pval <- pnorm(abs(summary_table[, "t value"]),lower.tail = FALSE)* 2
+summary_table <- cbind(summary_table, "p value" = round(pval,3))
+summary_table
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# M1d: Does job strain decrease self rated health?
+
+m1d <- polr(as.factor(srh) ~ job_strain + age + gender + doc_status + income + married.LT + race + edu_highest
+             + eng_read + migrant_2 + children, data=fdata, method='probit')
+summary(m1d)
+brant(m1d)
+
+# computing CI
+ci_m1d <- confint(m1d)
+
+m1d_res <- round(exp(cbind(OR = (coef(m1d)), ci_m1d)),3)
+m1d_res
+
+# computing the p-value if we want it
+summary_table <- coef(summary(m1d))
+pval <- pnorm(abs(summary_table[, "t value"]),lower.tail = FALSE)* 2
+summary_table <- cbind(summary_table, "p value" = round(pval,3))
+summary_table
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 2. To what extent does social support (social welfare and esl classes) moderate stressors?
+
+# EDS
+
+# summed social assistance
+
+m2a <- glm(eds ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
+           + doc_status*esl_class + income + married.LT + race 
+           + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2a)
+exp(coef(m2a))
+
+pe.m1 <- m2a$par
+ll.m1 <- logLik(m2a)
+
+#disaggregated social assistance
+
+m2aa <- glm(eds ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
+             + hh_dis_rel + hh_TANF + hh_leg_ser + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
+             + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
+            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2aa)
+exp(coef(m2aa))
+
+# Testing for goodness of fit 
+
+pe.m2 <- m2aa$par
+ll.m2 <- logLik(m2aa)
+
+k.m1 <- length(pe.m1)
+k.m2 <- length(pe.m2)
+
+aic.m1 <- 2*k.m1 - 2*ll.m1
+aic.m2 <- 2*k.m2 - 2*ll.m2
+aic.test <- aic.m2 - aic.m1
+aic.test
+
+# disaggregated model is a better fit than aggregated (huge improvement when we add children)
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# EPD
+
+m2b <- glm(epd ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
+            + doc_status*esl_class + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+m2bb <- glm(epd ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
+           + doc_status*esl_class + income + married.LT + race + health_in
+           + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2b)
+exp(coef(m2b))
+
+#disaggregated social assistance
+
+m2bb <- glm(epd ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
+            + hh_dis_rel + hh_TANF + hh_leg_ser + hh_soc_sec + hh_li_house + hh_other
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
+            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2bb)
+exp(coef(m2bb))
+
+# Testing goodness of fit
+
+pe.m1 <- m2b$par
+ll.m1 <- logLik(m2b)
+
+pe.m2 <- m2bb$par
+ll.m2 <- logLik(m2bb)
+
+k.m1 <- length(pe.m1)
+k.m2 <- length(pe.m2)
+
+aic.m1 <- 2*k.m1 - 2*ll.m1
+aic.m2 <- 2*k.m2 - 2*ll.m2
+aic.test <- aic.m2 - aic.m1
+aic.test
+
+# Again, disaggregated is a better fit (children again makes the difference)
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# LOW CONTROL 
+
+m2c <- glm(lowcont ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
+            + doc_status*esl_class + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2c)
+exp(coef(m2c))
+
+# disaggregated social assistance
+
+m2cc <- glm(lowcont ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
+            + hh_dis_rel + hh_TANF + hh_leg_ser + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
+            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2cc)
+exp(coef(m2cc))
+
+# goodness of fit test
+
+pe.m1 <- m2c$par
+ll.m1 <- logLik(m2c)
+
+pe.m2 <- m2cc$par
+ll.m2 <- logLik(m2cc)
+
+k.m1 <- length(pe.m1)
+k.m2 <- length(pe.m2)
+
+aic.m1 <- 2*k.m1 - 2*ll.m1
+aic.m2 <- 2*k.m2 - 2*ll.m2
+aic.test <- aic.m2 - aic.m1
+aic.test
+
+# disaggregated is a better fit
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# JOB STRAIN
+
+m2d <- glm(job_strain ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
+            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2d)
+exp(coef(m2d))
+
+m2dd <- glm(job_strain ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
+            + hh_dis_rel + hh_TANF + hh_leg_ser + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
+            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + edu_highest + eng_read + migrant_2 + children, data=fdata, family=binomial)
+
+summary(m2cc)
+exp(coef(m2cc))
+
+# goodness of fit test
+
+pe.m1 <- m2d$par
+ll.m1 <- logLik(m2d)
+
+pe.m2 <- m2dd$par
+ll.m2 <- logLik(m2dd)
+
+k.m1 <- length(pe.m1)
+k.m2 <- length(pe.m2)
+
+aic.m1 <- 2*k.m1 - 2*ll.m1
+aic.m2 <- 2*k.m2 - 2*ll.m2
+aic.test <- aic.m2 - aic.m1
+aic.test
+
+# disaggregated is a better fit
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# FIGURES 
+
+# bar plot
+cols_to_include <- c('hh_dis_ins', 'hh_dis_rel', 'hh_food_stamps', 'hh_gen_as', 'hh_leg_ser', 'hh_soc_sec', 
+                     'hh_vet_pay', 'hh_li_house', 'hh_other', 'hh_phealth_cl','hh_unemp_ins',
+                     'hh_medicaid','hh_TANF', 'hh_wic')
+fdata %>% mutate(obs_idx=row_number()) %>%select(obs_idx, all_of(cols_to_include)) %>% 
+  pivot_longer(cols = all_of(cols_to_include)) %>%filter(!is.na(value)) %>%
+  group_by(name) %>% summarize(n=sum(value), .groups='drop') %>% arrange(-n) %>% 
+  ggplot(aes(x=factor(name, levels=unique(name)), y=n)) + geom_bar(stat='identity') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1),
+        axis.title.x = element_blank()) +
+  ylab("Counts")
+
+# table of social assistance by doc status
+table1 <- table(fdata$doc_status, fdata$hh_social_assist)
+colnames(table1) <- c('no', 'yes')
+table1
+
+ggplot(data = fdata, aes(x = doc_status)) +
+  geom_bar() + theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1),
+                     axis.title.x = element_blank())
+
+# count of workers by doc status
+
+ggplot(data = fdata, aes(x = doc_status)) +
+  geom_bar() + theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1),
+                     axis.title.x = element_blank())
+                     
+# count of workers recieving social assistance by doc status - THIS DOES NOT LOOK RIGHT
+
+ggplot(data = fdata, aes(x = hh_social_assist, fill = doc_status)) +
+  geom_bar(position = "dodge") + theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1),
+                                       axis.title.x = element_blank())
+
 
 
 
