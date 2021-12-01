@@ -196,9 +196,6 @@ fdata <- merge(merge1, Data3, by="FWID")
     #   mutate(eds_total = 0)
     
     fdata <- fdata %>% rowwise() %>%
-      mutate(eds_total=0)
-    
-    fdata <- fdata %>% rowwise() %>%
       mutate(eds_total = sum(c_across(new_mcdays1:new_mcdays10)))
     
     fdata %>% count(eds_total) 
@@ -673,3 +670,5 @@ table(fdata$married.LT)
 #Creating a new dataset with only the selected covariates (created above)
     
 # [TIMELINE CHECK-IN ON WED. NOV 10, 2021]
+
+saveRDS(fdata, "fdata.rds")
