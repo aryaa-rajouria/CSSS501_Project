@@ -102,6 +102,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays1[fdata$new_mcdays1==5] <- 3
     fdata$new_mcdays1[fdata$new_mcdays1==6] <- 3
     fdata$new_mcdays1[fdata$new_mcdays1==7] <- 3
+    fdata$new_mcdays1[is.na(fdata$new_mcdays1)] <- 0
     
     #fdata$new_mcdays2 = fdata$MCDays2 
     #iters <- 7
@@ -116,6 +117,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays2[fdata$new_mcdays2==5] <- 3
     fdata$new_mcdays2[fdata$new_mcdays2==6] <- 3
     fdata$new_mcdays2[fdata$new_mcdays2==7] <- 3
+    fdata$new_mcdays2[is.na(fdata$new_mcdays2)] <- 0
     
     #regrouping mcdays3
     fdata$new_mcdays3[fdata$new_mcdays3==2] <- 1
@@ -124,6 +126,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays3[fdata$new_mcdays3==5] <- 3
     fdata$new_mcdays3[fdata$new_mcdays3==6] <- 3
     fdata$new_mcdays3[fdata$new_mcdays3==7] <- 3
+    fdata$new_mcdays3[is.na(fdata$new_mcdays3)] <- 0
     
     #regrouping mcdays4
     fdata$new_mcdays4[fdata$new_mcdays4==2] <- 1
@@ -132,6 +135,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays4[fdata$new_mcdays4==5] <- 3
     fdata$new_mcdays4[fdata$new_mcdays4==6] <- 3
     fdata$new_mcdays4[fdata$new_mcdays4==7] <- 3
+    fdata$new_mcdays4[is.na(fdata$new_mcdays4)] <- 0
     
     #regrouping mcdays5
     fdata$new_mcdays5[fdata$new_mcdays5==2] <- 1
@@ -140,6 +144,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays5[fdata$new_mcdays5==5] <- 3
     fdata$new_mcdays5[fdata$new_mcdays5==6] <- 3
     fdata$new_mcdays5[fdata$new_mcdays5==7] <- 3
+    fdata$new_mcdays5[is.na(fdata$new_mcdays5)] <- 0
     
     #regrouping mcdays6
     fdata$new_mcdays6[fdata$new_mcdays6==2] <- 1
@@ -148,6 +153,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays6[fdata$new_mcdays6==5] <- 3
     fdata$new_mcdays6[fdata$new_mcdays6==6] <- 3
     fdata$new_mcdays6[fdata$new_mcdays6==7] <- 3
+    fdata$new_mcdays6[is.na(fdata$new_mcdays6)] <- 0
     
     #regrouping mcdays7
     fdata$new_mcdays7[fdata$new_mcdays7==2] <- 1
@@ -156,6 +162,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays7[fdata$new_mcdays7==5] <- 3
     fdata$new_mcdays7[fdata$new_mcdays7==6] <- 3
     fdata$new_mcdays7[fdata$new_mcdays7==7] <- 3
+    fdata$new_mcdays7[is.na(fdata$new_mcdays7)] <- 0
     
     #regrouping mcdays8
     fdata$new_mcdays8[fdata$new_mcdays8==2] <- 1
@@ -164,6 +171,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays8[fdata$new_mcdays8==5] <- 3
     fdata$new_mcdays8[fdata$new_mcdays8==6] <- 3
     fdata$new_mcdays8[fdata$new_mcdays8==7] <- 3
+    fdata$new_mcdays8[is.na(fdata$new_mcdays8)] <- 0
     
     #regrouping mcdays9
     fdata$new_mcdays9[fdata$new_mcdays9==2] <- 1
@@ -172,6 +180,7 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays9[fdata$new_mcdays9==5] <- 3
     fdata$new_mcdays9[fdata$new_mcdays9==6] <- 3
     fdata$new_mcdays9[fdata$new_mcdays9==7] <- 3
+    fdata$new_mcdays9[is.na(fdata$new_mcdays9)] <- 0
     
     #regrouping mcdays10
     fdata$new_mcdays10[fdata$new_mcdays10==2] <- 1
@@ -180,8 +189,12 @@ fdata <- merge(merge1, Data3, by="FWID")
     fdata$new_mcdays10[fdata$new_mcdays10==5] <- 3
     fdata$new_mcdays10[fdata$new_mcdays10==6] <- 3
     fdata$new_mcdays10[fdata$new_mcdays10==7] <- 3
+    fdata$new_mcdays10[is.na(fdata$new_mcdays10)] <- 0
     
     # Adding new column based on the sum of other columns:
+    # fdata <- fdata %>% rowwise () %>% 
+    #   mutate(eds_total = 0)
+    
     fdata <- fdata %>% rowwise() %>%
       mutate(eds_total=0)
     
@@ -509,10 +522,10 @@ sum(is.na(fdata$dom_lang))
           fdata <- fdata %>% mutate(edu_any_usa = "No")
           fdata <- fdata %>% mutate(
             edu_any_usa = case_when(
-              edu_esl ==1 ~ "Yes",
-              edu_hs ==1 ~ "Yes",
-              edu_job ==1 ~ "Yes",
-              edu_coll ==1 ~ "Yes",
+              edu_esl =="Yes" ~ "Yes",
+              edu_hs =="Yes" ~ "Yes",
+              edu_job =="Yes" ~ "Yes",
+              edu_coll =="Yes" ~ "Yes",
               TRUE ~ edu_any_usa))          
   
           
@@ -520,9 +533,9 @@ sum(is.na(fdata$dom_lang))
           
           fdata <- fdata %>% mutate(
             edu_highest = case_when(
-              A09 >=6  ~ "Primary",
+              A09 >12 ~ "Any College",                  
               A09 >=12 ~ "Secondary",
-              A09 >12 ~ "Any College"))                  
+              A09 >=6  ~ "Primary"))
           
           # INCOME - FAMILY'S TOTAL INCOME
           fdata <- fdata %>% mutate(
@@ -532,7 +545,7 @@ sum(is.na(fdata$dom_lang))
               G03 >6 & G03 <=9  ~ "$9,999-17,499",
               G03 >9 & G03 <=12  ~ "$17,499-29,999",
               G03 >12 & G03 <97  ~ "$30,000",
-              G03==97 ~ "Don't know"),
+              G03==97 ~ NA_character_),
             income_family = factor(income_family,
                                    levels = c("$2,500-9,999",
                                               "$9,999-17,499",
@@ -548,7 +561,7 @@ sum(is.na(fdata$dom_lang))
               G01 >6 & G01 <=9  ~ "$9,999-17,499",
               G01 >9 & G01 <=12  ~ "$17,499-29,999",
               G01 >12 & G01 <95  ~ "$30,000",
-              G01==95 ~ "Don't know"),
+              G01==95 ~ NA_character_),
             income = factor(income,
                                    levels = c("$2,500-9,999",
                                               "$9,999-17,499",
