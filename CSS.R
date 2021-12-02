@@ -4,6 +4,8 @@
 library(readxl)
 library(tidyverse)
 library(sjlabelled) #this package allows us to give variables full labels
+library(data.table)
+library(dplyr)
 
 #Adding Nios Data 
 Data1 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_NIOSH_2009_2010.csv")
@@ -14,6 +16,7 @@ Data2 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_A2E
 #questionnaire variables in alphabetical order from "F" through "Y" covering the period 1989 through 2018
 Data3 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_F2Y191.csv")
 
+# write.csv(fdata, 'fdata_raw')
 
 # MERGE DATA (Nov. 8, 2021) [Aryaa]
 
@@ -23,9 +26,11 @@ merge1 <- merge(Data1, Data2, by="FWID")
 #merged the above data with Data 3 (Note obs for both merges are < than for original)
 fdata <- merge(merge1, Data3, by="FWID")
 
+# If we want the raw merged data
+
+# write.csv(fdata, 'fdata_raw')
+
 # TIMELINE CHECK-IN (Nov. 8, 2021) [Aryaa & Aminah] Update the group
-
-
 
 
 
@@ -44,7 +49,7 @@ fdata <- merge(merge1, Data3, by="FWID")
       # 4 -> Poor - 14
       # 7 -> Don't know - 3 
 
-      library(dplyr)
+      
       fdata <- rename(fdata, srh = MG1) # Renaming the variable to reflect self-rated health (srh)
       
       fdata$srh[fdata$srh == 7] <- NA # Recoding 3 "Don't Know" cases into NAs
@@ -63,20 +68,16 @@ fdata <- merge(merge1, Data3, by="FWID")
     #are we making an index? Just did a binary synopsis for var MC10 in NIOS
     #Relates to MC10: In the past seven (7) days, have you felt depressed? 
       #. = missing; 0 = No; 1 = Yes 
-    library(dplyr)
+    
     fdata <- rename(fdata, eds = MC10)
     #counting up eds in the final merged data: note, NOT seperated by years (2009/2010)
     fdata %>% count(eds)
     #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
     #are we getting rid of NAs? 
     fdata$MC10
-    df$Rate2 = df$Rate
+    # df$Rate2 = df$Rate # there's no df, not sure what this does
   
-    
-    df$Marks[df$Names == "Sita"] <- 25
-    
-  library(tidyverse) 
-  library(dplyr)
+# df$Marks[df$Names == "Sita"] <- 25 # there's no df, not sure what this does
     
     #m=10
  #for(i in 1:m){
@@ -200,6 +201,8 @@ fdata <- merge(merge1, Data3, by="FWID")
     
     fdata %>% count(eds_total) 
     
+# Note: below no longer matches count above
+
     #eds_total     n
     #<dbl> <int>
      # 1        12     1
@@ -243,6 +246,11 @@ fdata <- merge(merge1, Data3, by="FWID")
  # low control (binary) [Katherine]
 
 
+# previously this was a tibble and had row_wise operations so
+# things get weird, instead let's bring it back to being a data.frame
+
+fdata <- data.frame(fdata)
+
 smd <- fdata$MD1 + fdata$MD2 + fdata$MD3 + fdata$MD4 #new column with summed MD1,MD2,MD3,MD4 on decision-latitude
 lowcont <- rep(0, length(smd)) #lowcont created as an empty shell of 0s, to be filled by following:
 for (i in 1:length(smd)) { #for every element of smd,
@@ -261,6 +269,8 @@ for (i in 1:length(smd)) { #for every element of smd,
   }
 }
 
+fdata$lowcont <- lowcont
+
 # Above code effectively throws out observations where respondant 
 # (5) didn't understand, (6) refused, or (7) didn't know
 
@@ -274,8 +284,6 @@ sum(is.na(lowcont))
 # Job strain was coded as 1 if both the elevated psychological demands and low control variables were coded as 1. 
 # Otherwise, job strain was coded as 0.
 # Represents the other outcomes put together.
-  
-  library(dplyr)
 
   fdata <- fdata %>% mutate(
     job_strain = case_when(
@@ -283,6 +291,8 @@ sum(is.na(lowcont))
       epd != 1 & lowcont != 1 ~ 0)) # If epd and lowcont are not equal to 1, job strain is 0 
 
   fdata %>% count(job_strain) # Calling counts of each of the responses 
+
+# below counts no longer match above
 
   # Checking counts 
   #    job_strain    n
@@ -294,14 +304,19 @@ sum(is.na(lowcont))
 # CREATE COVARIATES (comment about the number of missing)
 
 # Age - AGE - respondent age  [Aryaa]
-    fdata <- rename(fdata, age = AGE)
-    #recategorizing fdata
-    fdata <- fdata %>% mutate(age = case_when(age < 20 ~ "14-19",
-                                     age < 30 ~ "20-29",
-                                     age < 40 ~ "30-39",
-                                     age < 50 ~ "40-49",
-                                     age < 60 ~ "50-59", 
-                                     age < 90 ~ "60+"))
+
+# fdata <- rename(fdata, age = AGE) # commented to preserve old AGE variable in case it provides a better fit 
+
+# below is not totally correct, there's an NA which is presumably someone 90+ yo
+# should change that line to TRUE ~ "60+"))
+
+fdata <- fdata %>% mutate(age = case_when(age < 20 ~ "14-19",
+                                          age < 30 ~ "20-29",
+                                          age < 40 ~ "30-39",
+                                          age < 50 ~ "40-49",
+                                          age < 60 ~ "50-59",
+                                          age < 90 ~ "60+"))
+
     fdata %>% count(age) 
    # age   n
    # 14-19 162
@@ -319,6 +334,8 @@ sum(is.na(lowcont))
     gender = case_when(
       GENDER == 0 ~ "man",
       GENDER == 1 ~ "woman"))
+
+fdata %>% count(gender)
     
   # check count
       # gender    n
@@ -489,11 +506,15 @@ sum(is.na(fdata$dom_lang))
               B03fx ==1 ~ "Yes"))
           
 
-          # EDCUATION - Attended any English classes in US
-          fdata <- fdata %>% mutate(
-            edu_esl = case_when(
-              B03ax ==0 ~ "No",
-              B03ax ==1 ~ "Yes"))         
+      
+# EDCUATION - Attended any English classes in US
+
+# B03ax doesn't exist because it was coded before as esl_class
+
+# fdata <- fdata %>% mutate(
+#   edu_esl = case_when(
+#     B03ax ==0 ~ "No",
+#     B03ax ==1 ~ "Yes"))
             
 
           # EDCUATION - Attended any job in US
@@ -503,27 +524,29 @@ sum(is.na(fdata$dom_lang))
               B03dx ==1 ~ "Yes")) 
           
           
-        # ANY EDUCATION IN UW
-          fdata <- fdata %>% mutate(edu_any_usa = "No")
-          fdata <- fdata %>% mutate(
-            edu_any_usa = case_when(
-              edu_esl ==1 ~ "Yes",
-              edu_hs ==1 ~ "Yes",
-              edu_job ==1 ~ "Yes",
-              edu_coll ==1 ~ "Yes",
-              TRUE ~ edu_any_usa))          
+        # ANY EDUCATION IN US
+
+# edu_esl doesn't exist anymore because it was recoded earlier
+# instead, using esl_class now
+
+fdata <- fdata %>% mutate(
+  edu_any_usa = case_when(
+    esl_class ==1 ~ "Yes",
+    edu_hs ==1 ~ "Yes",
+    edu_job ==1 ~ "Yes",
+    edu_coll ==1 ~ "Yes",
+    TRUE ~ edu_any_usa))    
             
-          
-          
-          # Highest education
-          fdata <- fdata %>% mutate(edu_any_usa = "No")
-          fdata <- fdata %>% mutate(
-            edu_any_usa = case_when(
-              edu_esl =="Yes" ~ "Yes",
-              edu_hs =="Yes" ~ "Yes",
-              edu_job =="Yes" ~ "Yes",
-              edu_coll =="Yes" ~ "Yes",
-              TRUE ~ edu_any_usa))          
+
+# # Highest education # this overwrites the previous encoding, maybe delete one or the other?
+# fdata <- fdata %>% mutate(edu_any_usa = "No") # this overwrites the previous encoding of edu_any_usa
+# fdata <- fdata %>% mutate(
+#   edu_any_usa = case_when(
+#     edu_esl =="Yes" ~ "Yes", # this doesn't exit anymore, recode
+#     edu_hs =="Yes" ~ "Yes",
+#     edu_job =="Yes" ~ "Yes",
+#     edu_coll =="Yes" ~ "Yes",
+#     TRUE ~ edu_any_usa))
   
           
           # highest grade finsihed
@@ -666,6 +689,9 @@ sum(is.na(fdata$married.LT))
 table(fdata$married.LT)
 # 2337 married, 231 sep/divorced, 1122 single, 1 na
 
+# Number of children in the household (under 17)
+
+fdata <- rename(fdata, children = A15B)
     
 #Creating a new dataset with only the selected covariates (created above)
     
