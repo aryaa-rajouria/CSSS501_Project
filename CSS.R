@@ -16,8 +16,6 @@ Data2 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_A2E
 #questionnaire variables in alphabetical order from "F" through "Y" covering the period 1989 through 2018
 Data3 <- read.csv("https://www.dol.gov/sites/dolgov/files/ETA/naws/pdfs/NAWS_F2Y191.csv")
 
-# write.csv(fdata, 'fdata_raw')
-
 # MERGE DATA (Nov. 8, 2021) [Aryaa]
 
   # NAWS data with NIOSH data aka Final Data
