@@ -310,12 +310,12 @@ sum(is.na(lowcont))
 # below is not totally correct, there's an NA which is presumably someone 90+ yo
 # should change that line to TRUE ~ "60+"))
 
-fdata <- fdata %>% mutate(age = case_when(age < 20 ~ "14-19",
-                                          age < 30 ~ "20-29",
-                                          age < 40 ~ "30-39",
-                                          age < 50 ~ "40-49",
-                                          age < 60 ~ "50-59",
-                                          age < 90 ~ "60+"))
+fdata <- fdata %>% mutate(age = case_when(AGE < 20 ~ "14-19",
+                                          AGE < 30 ~ "20-29",
+                                          AGE < 40 ~ "30-39",
+                                          AGE < 50 ~ "40-49",
+                                          AGE < 60 ~ "50-59",
+                                          AGE < 90 ~ "60+"))
 
     fdata %>% count(age) 
    # age   n
@@ -525,6 +525,8 @@ sum(is.na(fdata$dom_lang))
           
           
         # ANY EDUCATION IN US
+
+fdata <- fdata %>% mutate(edu_any_usa = "No")
 
 # edu_esl doesn't exist anymore because it was recoded earlier
 # instead, using esl_class now
