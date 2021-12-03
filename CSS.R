@@ -3,7 +3,7 @@
 
 library(readxl)
 library(tidyverse)
-library(sjlabelled) #this package allows us to give variables full labels
+library(labelled) #this package allows us to give variables full labels
 library(data.table)
 library(dplyr)
 
@@ -62,19 +62,27 @@ fdata <- merge(merge1, Data3, by="FWID")
       #    4     14
       #   NA      4    
 
+      # make srh into factor with labels
+      fdata <- fdata %>% mutate(srh=factor(srh, labels = c("Excellent", "Good", "Fair", "Poor")))
+      var_label(fdata$srh) <- "Self rated health"
+  
+      
+      
+      
   # elevated depressive symptoms (binary) [Aryaa]
     #are we making an index? Just did a binary synopsis for var MC10 in NIOS
     #Relates to MC10: In the past seven (7) days, have you felt depressed? 
       #. = missing; 0 = No; 1 = Yes 
     
-    fdata <- rename(fdata, eds = MC10)
-    #counting up eds in the final merged data: note, NOT seperated by years (2009/2010)
-    fdata %>% count(eds)
+    #fdata <- rename(fdata, eds = MC10) - CKA changed 12/3, not correct
+      
+    #counting up eds in the final merged data: note, NOT separated by years (2009/2010)
+    #fdata %>% count(eds)
     #3 NA's, 2174 (No) 0s, and 514 (Yes) 1s
     #are we getting rid of NAs? 
     fdata$MC10
     # df$Rate2 = df$Rate # there's no df, not sure what this does
-  
+    
 # df$Marks[df$Names == "Sita"] <- 25 # there's no df, not sure what this does
     
     #m=10
@@ -198,7 +206,37 @@ fdata <- merge(merge1, Data3, by="FWID")
       mutate(eds_total = sum(c_across(new_mcdays1:new_mcdays10)))
     
     fdata %>% count(eds_total) 
+    # eds_total     n
+    # <dbl> <int>
+    #   1         0   237
+    # 2         1   133
+    # 3         2   186
+    # 4         3  2802
+    # 5         4   249
+    # 6         5    58
+    # 7         6    26
     
+    ##-------------------------------------------------------------------
+    # added 12/3 by Courtney
+    fdata <- fdata %>% rowwise() %>%
+      mutate(eds_total2 = sum(across(starts_with("new_mcdays"))))
+    
+    fdata %>% count(eds_total2) 
+    
+
+    #eds binary variable created, 
+    fdata <- fdata %>% mutate(eds = case_when(
+      eds_total2 < 10 ~ 0,
+      eds_total2 >=10 ~ 1))
+    var_label(fdata$eds) <- "Elevated depressive symptoms"
+    
+    # look at results, for some reason eds_total wasn't accurate
+    # fdata %>% select(new_mcdays1, new_mcdays2, new_mcdays3, new_mcdays4, new_mcdays5, new_mcdays6, new_mcdays7, new_mcdays8, new_mcdays9, new_mcdays10, eds_total2, eds_total) %>% view()
+    # 
+    
+    
+    
+    ##-------------------------------------------------------------------
 # Note: below no longer matches count above
 
     #eds_total     n
@@ -213,12 +251,14 @@ fdata <- merge(merge1, Data3, by="FWID")
     #8        30     1
     #9        NA  3681
     
-    fdata <- fdata %>% rowwise() %>%
-      mutate(eds_check = sum(c_across(MCDays1:MCDays10)))
-    
-    fdata %>% count(eds_check) 
+    # fdata <- fdata %>% rowwise() %>%
+    #   mutate(eds_check = sum(c_across(MCDays1:MCDays10)))
+    # 
+    # fdata %>% count(eds_check) 
      
-  # elevated psychological demands (binary) [Courtney]
+  
+    
+    # elevated psychological demands (binary) [Courtney]
     # this indicator sums up responses to MJ1 and MJ2
     fdata <- fdata %>% mutate(
       MJ1b = case_when(
@@ -238,6 +278,7 @@ fdata <- merge(merge1, Data3, by="FWID")
         # 1   0 2540
         # 2   1 1134
         # 3  NA   17
+    var_label(fdata$epd) <- "Elevated psychological demand"
     
     
     
@@ -268,6 +309,7 @@ for (i in 1:length(smd)) { #for every element of smd,
 }
 
 fdata$lowcont <- lowcont
+var_label(fdata$lowcont) <- "Low control"
 
 # Above code effectively throws out observations where respondant 
 # (5) didn't understand, (6) refused, or (7) didn't know
@@ -289,7 +331,8 @@ sum(is.na(lowcont))
       epd != 1 & lowcont != 1 ~ 0)) # If epd and lowcont are not equal to 1, job strain is 0 
 
   fdata %>% count(job_strain) # Calling counts of each of the responses 
-
+  var_label(fdata$job_strain) <- "Job strain"
+  
 # below counts no longer match above
 
   # Checking counts 
@@ -314,6 +357,7 @@ fdata <- fdata %>% mutate(age = case_when(AGE < 20 ~ "14-19",
                                           AGE < 50 ~ "40-49",
                                           AGE < 60 ~ "50-59",
                                           AGE < 90 ~ "60+"))
+var_label(fdata$age) <- "Age"
 
     fdata %>% count(age) 
    # age   n
@@ -327,12 +371,14 @@ fdata <- fdata %>% mutate(age = case_when(AGE < 20 ~ "14-19",
    # 80-89   1
    #  <NA>   1
 
+    
 # Gender - GENDER - respondent gender [Courtney]
   fdata <- fdata %>% mutate(
     gender = case_when(
       GENDER == 0 ~ "man",
       GENDER == 1 ~ "woman"))
-
+  var_label(fdata$gender) <- "Gender"
+  
 fdata %>% count(gender)
     
   # check count
@@ -348,6 +394,9 @@ fdata %>% count(gender)
 fdata <- rename(fdata, esl_class = B03ax)
 table(fdata$esl_class)
 sum(is.na(fdata$esl_class))
+
+var_label(fdata$esl_class) <- "ESL class"
+
 # attended esl classes - 3091 0s (no), 598 1s (yes), 2 (na)
 
   # B07 - asks how well the respondent speaks English
@@ -355,6 +404,9 @@ sum(is.na(fdata$esl_class))
 fdata <- rename(fdata, eng_speak = B07)
 table(fdata$eng_speak)
 sum(is.na(fdata$eng_speak))
+fdata <- fdata %>% mutate(eng_speak = factor(eng_speak, labels = c("Not at all", "A little", "Somewhat", "Well")))
+var_label(fdata$eng_speak) <- "Speak English"
+
 # english speaking skill - 1223 1s (not at all), 1220 2s (a little), 355 3s (somewhat), 887 4s (well), 6 (na)
 
   # B08 - asks how well the respondent reads English 
@@ -362,6 +414,9 @@ sum(is.na(fdata$eng_speak))
 fdata <- rename(fdata, eng_read = B08)
 table(fdata$eng_read)
 sum(is.na(fdata$eng_read))
+fdata <- fdata %>% mutate(eng_read = factor(eng_read, labels = c("Not at all", "A little", "Somewhat", "Well")))
+var_label(fdata$eng_read) <- "Read English"
+
 #english reading skill - 1687 1s (not at all), 908 2s (a little), 241 3s (somewhat), 847 4s (well), 8 (na)
 
   # B20 - asks about language spoken to respondent as a child 
