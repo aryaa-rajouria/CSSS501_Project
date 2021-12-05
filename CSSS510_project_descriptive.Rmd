@@ -1,0 +1,131 @@
+---
+title: "CSSS510_project_descriptive"
+author: "Courtney K Allen"
+date: "12/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(gtsummary)
+library(here)
+library(ggplot2)
+```
+
+
+
+```{r}
+df <- readRDS(here("./fdata.rds"))
+
+
+
+```
+
+
+
+```{r}
+
+df_covariate <- df %>% select(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status)
+
+df_outcome <- df %>% select(srh, eds, lowcont, epd)
+
+df_all <- df %>% select(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, srh, eds, lowcont, epd)
+```
+
+
+# Table of covariates
+
+```{r}
+df_covariate %>% tbl_summary(, missing = 'no')
+
+```
+
+
+# Table of outcomes
+
+```{r}
+df_outcome %>% tbl_summary(, missing = 'no')
+
+```
+
+
+# Table of SRH by covariates
+
+```{r}
+df_all %>% 
+  tbl_summary(
+    by = srh,
+    percent = "row",
+    missing = "no",
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  add_p() %>%
+  bold_labels() %>%
+  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
+  add_overall(col_label = "**Overall**", last = TRUE) %>%
+modify_spanning_header(starts_with("stat_") ~ "**Self-rated health by covariates**")
+```
+
+
+# Table of EDS by covariates
+
+```{r}
+df_all %>% 
+  tbl_summary(
+    by = eds,
+    percent = "row",
+    missing = "no",
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  add_p() %>%
+  bold_labels() %>%
+  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
+  add_overall(col_label = "**Overall**", last = TRUE) %>%
+modify_spanning_header(starts_with("stat_") ~ "**Elevated depressive symptoms by covariates**")
+```
+
+
+# Table of EPD by covariates
+
+```{r}
+df_all %>% 
+  tbl_summary(
+    by = epd,
+    percent = "row",
+    missing = "no",
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  add_p() %>%
+  bold_labels() %>%
+  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
+  add_overall(col_label = "**Overall**", last = TRUE) %>%
+modify_spanning_header(starts_with("stat_") ~ "**Elevated psychological demands by covariates**")
+```
+
+# Table of low control by covariates
+
+```{r}
+df_all %>% 
+  tbl_summary(
+    by = lowcont,
+    percent = "row",
+    missing = "no",
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  add_p() %>%
+  bold_labels() %>%
+  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
+  add_overall(col_label = "**Overall**", last = TRUE) %>%
+modify_spanning_header(starts_with("stat_") ~ "**Low control by covariates**")
+```
+
+
+
+# Figures for poster
+
+```{r}
+
+df_all %>% ggplot(aes(x= 
+```
+
