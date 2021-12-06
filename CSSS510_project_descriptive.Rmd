@@ -2,15 +2,23 @@
 title: "CSSS510_project_descriptive"
 author: "Courtney K Allen"
 date: "12/4/2021"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(gtsummary)
-library(here)
+library(here)        # easier way to navigate to dataset
 library(ggplot2)
+library(gridExtra)
+library(tidyverse)
+library(ggpubr)      # arranging figures together
+library(grDevices)   # colors for figures
 ```
 
 
@@ -31,6 +39,8 @@ df_covariate <- df %>% select(age, gender, income, race, edu_highest, eng_read, 
 df_outcome <- df %>% select(srh, eds, lowcont, epd)
 
 df_all <- df %>% select(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, srh, eds, lowcont, epd)
+
+df_all <- df_all %>% mutate(Total = 1)
 ```
 
 
@@ -58,7 +68,7 @@ df_all %>%
     by = srh,
     percent = "row",
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
@@ -76,7 +86,7 @@ df_all %>%
     by = eds,
     percent = "row",
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
@@ -94,7 +104,7 @@ df_all %>%
     by = epd,
     percent = "row",
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
@@ -111,7 +121,7 @@ df_all %>%
     by = lowcont,
     percent = "row",
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status),
+    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
@@ -124,8 +134,206 @@ modify_spanning_header(starts_with("stat_") ~ "**Low control by covariates**")
 
 # Figures for poster
 
+## Self-rated health
+
+Color palette is ordered because outcome is ordered
+
 ```{r}
 
-df_all %>% ggplot(aes(x= 
+# self rated health and documented status
+
+p1 <- ggplot(data = subset(df_all, !is.na(srh) & !is.na(doc_status)), aes(x=doc_status,
+              fill=as.factor(srh))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x= "doc. status",
+       fill = "SRH") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+   scale_fill_brewer(palette="Purples", direction=-1) 
+
 ```
 
+
+```{r}
+
+# self rated health and gender
+
+p2 <- ggplot(data = subset(df_all, !is.na(srh)), aes(x=gender,
+              fill=as.factor(srh))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(fill = "SRH") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+   scale_fill_brewer(palette="Purples", direction=-1) 
+
+```
+
+
+```{r}
+
+srh_plot <- ggarrange(p1, p2, 
+          nrow=2,
+          common.legend = T,
+          legend="bottom",
+          align="v")
+
+annotate_figure(srh_plot, 
+                top = text_grob("Self-rated health",
+                                          face = "bold", size = 14))
+```
+
+
+## Mental Health Outcomes
+
+
+```{r}
+
+p3 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
+              fill=as.factor(eds))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Elevated depressive symptoms by documented status",
+       fill = "EDS") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+
+
+```{r}
+
+p4 <- ggplot(data = subset(df_all,!is.na(gender)), aes(x=gender,
+              fill=as.factor(eds))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Elevated depressive symptoms",
+       fill = "EDS") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+```{r}
+
+p5 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
+              fill=as.factor(epd))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Elevated psychological demands",
+       fill = "EPD") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+
+```{r}
+
+p6 <- ggplot(data = subset(df_all,!is.na(gender)), 
+             aes(x=gender,
+              fill=as.factor(epd))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Elevated psychological demands",
+       fill = "EPD") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+
+```{r}
+
+p7 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
+              fill=as.factor(lowcont))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Low control",
+       fill = "Low control") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+
+
+```{r}
+
+p8 <- ggplot(data = subset(df_all,!is.na(gender)), 
+             aes(x=gender,
+              fill=as.factor(lowcont))) +
+  geom_bar(position="fill", na.rm=T) +
+  labs(y = "%",
+       x="",
+       title = "Low control",
+       fill = "Low control") +
+  coord_flip() +
+  theme_classic() +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
+
+```
+
+
+
+```{r}
+
+
+# data_long <- df_all %>%
+#    mutate(id = row_number()) %>%
+#   pivot_longer(
+#   cols = c("eds", "epd", "lowcont"),
+#   names_to = "mh_outcomes",
+#   values_to = "Percent")
+#   
+# ggplot(data = subset(data_long,!is.na(doc_status)), 
+#        aes(x=doc_status,
+#            y=Percent,
+#               fill=mh_outcomes)) +
+#   geom_bar(position="dodge", stat="identity") 
+
+```
+
+
+
+```{r}
+
+mh_plot <- ggarrange(p3, p4, p5, p6, p7, p8, 
+          ncol =2,
+          common.legend = T,
+          legend="bottom",
+          align="v")
+
+mh_plot
+
+# annotate_figure(mh_plot, 
+#                 top = text_grob("Mental health outcomes",
+#                                           face = "bold", size = 14))
+```
