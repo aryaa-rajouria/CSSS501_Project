@@ -339,6 +339,11 @@ fdata %>% count(gender)
 # man 3052
 # woman  639
 
+# Creating a numeric variable called gender_num 
+
+fdata <- fdata %>% mutate(gender_num = GENDER)
+table(fdata$gender_num)
+sum(is.na(fdata$gender_num))
 
 # English attainment: [Katherine]
 
