@@ -17,17 +17,19 @@ fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Projec
 
 # _____________________________________________________________________________________________
 
-# WHAT FACTORS (ESPECIALLY DOC_STATUS) ARE ASSOCIATED WITH POOR MENTAL HEALTH? 
+# WHAT FACTORS (ESPECIALLY DOC_STATUS) ARE ASSOCIATED WITH POOR MENTAL HEALTH?
 
+# NOTES: 
+# Taking out interaction terms, because would be more interpretable if we can calculate predicted probabilities
+# In non-simcf models, not using numeric version variable because not sure if interperetation is same
 # _____________________________________________________________________________________________
 
 # EDS
 
 # summed social assistance
 
-m2a <- glm(eds ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
-           + doc_status*esl_class + income + married.LT + race 
-           + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+m2a <- glm(eds ~ hh_social_assist + esl_class + age + gender + doc_status
+           + income + married.LT + race + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 
 summary(m2a)
@@ -38,8 +40,7 @@ exp(coef(m2a))
 
 m2aa <- glm(eds ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
-            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
-            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status + income + married.LT + race 
             + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 summary(m2aa)
@@ -69,41 +70,52 @@ aic.test
 
 # _____________________________________________________________________________________________
 
-# ATTEMPT AT EXPECTED VALUES WITH SIMCF ON EDS
+# EXPECTED VALUES OF EDS FOR EACH DOCUMENTATION STATUS 
 
-# Currently not working, see 'xyhp' issue below
+# model1 <- (eds ~ hh_social_assist + esl_class_num + age_num + gender_num + doc_status_num + 
+#             doc_status_num*hh_social_assist + doc_status_num*esl_class_num + income_num + married.LT_num 
+#           + race_num + edu_highest_num)
+# m2a1 <- glm(formula=model, data=fdata, family=binomial)
+# 
+# pe.glm <- m2a$coefficients
+# vc.glm <- vcov(m2a) 
+# ll.glm <- logLik(m2a)
 
-model <- (eds ~ hh_social_assist + esl_class_num + age_num + gender_num + doc_status_num + 
-            doc_status_num*hh_social_assist + doc_status_num*esl_class + income_num + married.LT_num 
-          + race_num + edu_highest_num)
+
+model <- (eds ~ doc_status_num + hh_social_assist + esl_class_num + age_num + gender_num + 
+             race_num + edu_highest_num + income_num + married.LT_num)
 m2a <- glm(formula=model, data=fdata, family=binomial)
-
 pe.glm <- m2a$coefficients
 vc.glm <- vcov(m2a) 
 ll.glm <- logLik(m2a)
+
 
 used_columns <- c('eds', 'hh_social_assist', 'esl_class_num', 'age_num', 'gender_num', 'doc_status_num',
                   'income_num', 'married.LT_num', 'race_num', 'edu_highest_num')
 summary(fdata[,used_columns])
 sims <- 1e4
-simbetas <- mvrnorm(sims, pe.glm, vc.glm)
+simbetas <- mvrnorm(sims, pe.glm2, vc.glm2)
 
-# yields warning message - filled with NAs
-xhyp <- cfMake(model, fdata, nscen=4)
+# Making a scenario for each type of doc status
+xhyp <- cfMake(model2, fdata, nscen=4)
 
-# Make all 4 scenarios for all citizenship categories
-for (i in 1:5) { xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=i, scen=i) }
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=1, scen=1)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=2, scen=2)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=3, scen=3)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=4, scen=4)
 
 # run simulations
 eds_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
 eds_results
 
+
+# POTENTIAL TO-DO: Graph expected values
+
 # _____________________________________________________________________________________________
 
 # EPD
 
-m2b <- glm(epd ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
-           + doc_status*esl_class + income + married.LT + race 
+m2b <- glm(epd ~ hh_social_assist + esl_class + age + gender + doc_status + income + married.LT + race 
            + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 summary(m2b)
@@ -113,8 +125,7 @@ exp(coef(m2b))
 
 m2bb <- glm(epd ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_li_house + hh_other
-            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
-            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status + income + married.LT + race 
             + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 summary(m2bb)
@@ -142,8 +153,7 @@ aic.test
 
 # LOW CONTROL 
 
-m2c <- glm(lowcont ~ hh_social_assist + esl_class + age + gender + doc_status + doc_status*hh_social_assist
-           + doc_status*esl_class + income + married.LT + race 
+m2c <- glm(lowcont ~ hh_social_assist + esl_class + age + gender + doc_status + income + married.LT + race 
            + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 summary(m2c)
@@ -153,9 +163,9 @@ exp(coef(m2c))
 
 m2cc <- glm(lowcont ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
-            + hh_li_house + hh_gen_as + hh_vet_pay + age + gender*hh_wic + doc_status
-            + doc_status*esl_class + doc_status*health_in + income + married.LT + race 
-            + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+            + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status
+            + income + married.LT + race + edu_highest + eng_read 
+            + migrant_2, data=fdata, family=binomial)
 
 summary(m2cc)
 exp(coef(m2cc))
