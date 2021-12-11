@@ -314,6 +314,17 @@ fdata <- fdata %>% mutate(age = case_when(AGE < 20 ~ "14-19",
                                           AGE < 60 ~ "50-59",
                                           AGE < 90 ~ "60+"))
 
+
+# Creating a numeric variable for age
+fdata <- fdata %>% mutate(age_num = case_when(AGE < 20 ~ 1,
+                                              AGE < 30 ~ 2,
+                                              AGE < 40 ~ 3,
+                                              AGE < 50 ~ 4,
+                                              AGE < 60 ~ 5,
+                                              AGE < 90 ~ 6))
+
+var_label(fdata$age_num) <- "Age numeric"
+
 fdata %>% count(age) 
 # age   n
 # 14-19 162
