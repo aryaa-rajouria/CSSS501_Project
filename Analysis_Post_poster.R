@@ -41,6 +41,11 @@ summary(m2a)
 # odds ratios
 exp(coef(m2a))
 
+# preparing for pp
+pe.glm <- m2a$coefficients
+vc.glm <- vcov(m2a) 
+ll.glm <- logLik(m2a)
+
 # disaggregated social assistance
 
 m2aa <- glm(eds ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
@@ -77,34 +82,28 @@ aic.test
 
 # EXPECTED VALUES OF EDS FOR EACH DOCUMENTATION STATUS 
 
-# model1 <- (eds ~ hh_social_assist + esl_class_num + age_num + gender_num + doc_status_num + 
-#             doc_status_num*hh_social_assist + doc_status_num*esl_class_num + income_num + married.LT_num 
-#           + race_num + edu_highest_num)
-# m2a1 <- glm(formula=model, data=fdata, family=binomial)
-# 
-# pe.glm <- m2a$coefficients
-# vc.glm <- vcov(m2a) 
-# ll.glm <- logLik(m2a)
+model2 <- (eds ~ hh_social_assist + doc_status_num)
+           
+           # + edu_esl_num + age_num + gender_num
+           # + income_num + married.LT_num + race_num + edu_highest_num + eng_read_num + migrant_2_num)
+m2a_test <- glm(formula=model2, data=fdata, family=binomial)
+summary(m2a_test)
+pe.glm <- m2a_test$coefficients
+vc.glm <- vcov(m2a_test) 
+ll.glm <- logLik(m2a_test)
 
+mdata <- extractdata(model2, fdata, na.rm=TRUE)
 
-model <- eds ~ doc_status_num + hh_social_assist + age_num + gender_num + 
-             race_num + edu_highest_num + income_num + married.LT_num + edu_esl_num
-m2a <- glm(formula=model, data=fdata, family=binomial)
-pe.glm <- m2a$coefficients
-vc.glm <- vcov(m2a) 
-ll.glm <- logLik(m2a)
-
-mdata <- extractdata(model, fdata, na.rm=TRUE)
-
-
-used_columns <- c('eds', 'hh_social_assist', 'age_num', 'edu_esl', 'gender_num', 'doc_status_num',
+# checking that all variables look ok
+used_columns <- c('eds', 'hh_social_assist', 'age_num', 'edu_esl_num', 'gender_num', 'doc_status_num',
                   'income_num', 'married.LT_num', 'race_num', 'edu_highest_num')
 summary(fdata[,used_columns])
+
 sims <- 1e4
-simbetas <- mvrnorm(sims, pe.glm2, vc.glm2)
+simbetas <- mvrnorm(sims, pe.glm, vc.glm)
 
 # Making a scenario for each type of doc status
-xhyp <- cfMake(model2, fdata, nscen=4)
+xhyp <- cfMake(model2, mdata, nscen=4)
 
 xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=1, scen=1) 
 xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=2, scen=2)
@@ -118,26 +117,36 @@ eds_results
 
 # PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
 
-social_assistance <- c(0, 1)
-doc_status <- c(1:4)
-simVars <- expand.grid(doc_status_num=doc_status, social_assistance=social_assistance)
+hh_social_assist <- c(0, 1)
+doc_status_num <- c(1:4)
+simVars <- expand.grid(doc_status_num=doc_status_num, hh_social_assist=hh_social_assist)
 nscen <- nrow(simVars)
 
-diff_sa_ds <- cfMake(model, mdata, nscen)
+diff_sa_ds <- cfMake(model2, mdata, nscen)
 for (i in 1:nscen) {
   diff_sa_ds <- simcf::cfChange(diff_sa_ds, "doc_status_num", x=simVars$doc_status_num[i], scen=i)
-  diff_sa_ds <- simcf::cfChange(diff_sa_ds, "social_assistance", x=simVars$social_assistance[i], scen=i)
+  diff_sa_ds <- simcf::cfChange(diff_sa_ds, "hh_social_assist", x=simVars$hh_social_assist[i], scen=i)
 }
-
+simbetas[1:4,]
 # Simulate expected probabilities for all scenarios
 diff_sa_ds_sims <- simcf::logitsimev(diff_sa_ds, simbetas, ci=0.95)
- # ^ Confused, gives error for non-conformable arguments, but still seems to work
 
 pp_sa_ds_results <- cbind(simVars, data.frame(diff_sa_ds_sims))
 
 pp_sa_ds_results
 
-# POTENTIAL TO-DO: Graph expected values
+# FIGURE - PREDICTED PROB OF EDS BY DOC STATUS AND SOCIAL ASSISTANCE (NOT RIGHT YET)
+
+pp_sa_ds_results %>%
+  # ggplot(aes(x=factor(era), y=pe, ymin=lower, ymax=upper, color=factor(winpct))) +
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Probability of EDS') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  facet_grid(. ~ factor(hh_social_assist, levels=c(0,1), labels=c('No social assist', "Yes social assist"))) +
+  xlab('Documentation status') +
+  NULL
 
 # _____________________________________________________________________________________________
 
