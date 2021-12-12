@@ -321,7 +321,7 @@ diff_sa_ds_fd_epd_sims_df %>%
                       label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
              y=pe, ymin=lower, ymax=upper)) +
   geom_pointrange() + xlab('doc_status') +
-  ylab('First diff of EPD with/without Social Assist') + xlab('Documentation status') +
+  ylab('First diff of EPD w/wo Social Assist') + xlab('Documentation status') +
   geom_hline(yintercept=0, linetype='dashed')
 
 # _____________________________________________________________________________________________
