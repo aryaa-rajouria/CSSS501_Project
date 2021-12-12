@@ -55,7 +55,18 @@ df_covariate %>% tbl_summary(, missing = 'no')
 # Table of outcomes
 
 ```{r}
-df_outcome %>% tbl_summary(, missing = 'no')
+df_outcome %>% tbl_summary(, missing = 'no') %>%
+as_gt() %>%
+  # modify with gt functions
+  gt::tab_header("Health Outcomes") %>% 
+  gt::tab_options(
+    table.font.size = "small",
+    data_row.padding = gt::px(1))
+
+
+
+
+
 
 ```
 
@@ -141,18 +152,24 @@ Color palette is ordered because outcome is ordered
 ```{r}
 
 # self rated health and documented status
-
-p1 <- ggplot(data = subset(df_all, !is.na(srh) & !is.na(doc_status)), aes(x=doc_status,
+temp <- subset(df_all,
+              !is.na(srh) & 
+                !is.na(doc_status))
+p1 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(srh)), aes(x=doc_status,
               fill=as.factor(srh))) +
   geom_bar(position="fill", na.rm=T) +
   labs(y = "%",
-       x= "doc. status",
+       x="",
        fill = "SRH") +
   coord_flip() +
   theme_classic() +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
+    theme(legend.position = "bottom", 
+          legend.title = element_blank(),
+          legend.margin=margin(0,0,0,0)) +
+  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE))  +
    scale_fill_brewer(palette="Purples", direction=-1) 
+
+p1
 
 ```
 
@@ -193,12 +210,12 @@ annotate_figure(srh_plot,
 
 ```{r}
 
-p3 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
+p3 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(eds)), aes(x=doc_status,
               fill=as.factor(eds))) +
   geom_bar(position="fill", na.rm=T) +
   labs(y = "%",
        x="",
-       title = "Elevated depressive symptoms by documented status",
+       title = "Elevated depressive symptoms",
        fill = "EDS") +
   coord_flip() +
   theme_classic() +
@@ -229,7 +246,7 @@ p4 <- ggplot(data = subset(df_all,!is.na(gender)), aes(x=gender,
 
 ```{r}
 
-p5 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
+p5 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(epd)), aes(x=doc_status,
               fill=as.factor(epd))) +
   geom_bar(position="fill", na.rm=T) +
   labs(y = "%",
@@ -247,7 +264,7 @@ p5 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
 
 ```{r}
 
-p6 <- ggplot(data = subset(df_all,!is.na(gender)), 
+p6 <- ggplot(data = subset(df_all,!is.na(gender) & !is.na(epd)),
              aes(x=gender,
               fill=as.factor(epd))) +
   geom_bar(position="fill", na.rm=T) +
@@ -266,8 +283,10 @@ p6 <- ggplot(data = subset(df_all,!is.na(gender)),
 
 ```{r}
 
-p7 <- ggplot(data = subset(df_all,!is.na(doc_status)), aes(x=doc_status,
-              fill=as.factor(lowcont))) +
+p7 <- ggplot(data = subset(df_all,
+                           !is.na(doc_status) & !is.na(lowcont)),
+             aes(x=doc_status,
+                 fill=as.factor(lowcont))) +
   geom_bar(position="fill", na.rm=T) +
   labs(y = "%",
        x="",
@@ -324,16 +343,42 @@ p8 <- ggplot(data = subset(df_all,!is.na(gender)),
 
 
 ```{r}
-
-mh_plot <- ggarrange(p3, p4, p5, p6, p7, p8, 
-          ncol =2,
+mh_plot <- ggarrange(p3, p5, p7, 
+          ncol=1,
+          nrow=3,
           common.legend = T,
           legend="bottom",
           align="v")
 
-mh_plot
 
+
+desc_mh <- annotate_figure(mh_plot, 
+                top = text_grob("Mental Health Outcomes",
+
+                                                                          face = "bold", size = 14))
+
+desc_srh <- annotate_figure(p1, 
+                top = text_grob("Self-rated health",
+                                          face = "bold", size = 14))
+final_plot <- ggarrange(p1, desc_mh,
+          ncol=1)
+  
+desc_mh
+ggsave(filename="desc_mh", plot = desc_mh)
+ggexport(desc_mh, filename = "desc_mh.png")
 # annotate_figure(mh_plot, 
 #                 top = text_grob("Mental health outcomes",
 #                                           face = "bold", size = 14))
+
+# save plot
+png("desc_srh.png", width=450, height=180)
+# 2. Create the plot
+desc_srh
+# 3. Close the file
+dev.off()
+
+
+
+
+
 ```

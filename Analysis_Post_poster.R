@@ -11,6 +11,8 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(here)
+library(gtsummary)
+library(modelsummary)
 
 # when you load MASS and dplyr select is overwritten
 
@@ -313,9 +315,6 @@ prop.8
 prop.9 <- with(fdata, table(doc_status, hh_social_assist)) %>%
   prop.table(margin = 1)
 prop.9
-
-
-
 
 
 
