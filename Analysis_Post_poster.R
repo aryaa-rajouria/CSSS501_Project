@@ -9,10 +9,15 @@ library(verification)
 library(tile)
 library(ggplot2)
 library(tidyr)
-library(dplyr) # when you load MASS and dplyr select is overwritten
+library(dplyr)
+library(here)
+
+# when you load MASS and dplyr select is overwritten
+
+fdata <- readRDS(here("./fdata.rds"))
 
 options(scipen = 999)
-fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Project/fdata9.csv')
+# fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Project/fdata9.csv')
 
 
 # _____________________________________________________________________________________________
@@ -23,9 +28,9 @@ fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Projec
 # Taking out interaction terms, because would be more interpretable if we can calculate predicted probabilities
 # In non-simcf models, not using numeric version variable because not sure if interperetation is same
 # _____________________________________________________________________________________________
+fdata <- fdata %>% rename(esl_class=edu_esl)
 
 # EDS
-
 # summed social assistance
 
 m2a <- glm(eds ~ hh_social_assist + esl_class + age + gender + doc_status
