@@ -33,7 +33,7 @@ fdata <- fdata %>% rename(esl_class=edu_esl)
 # EDS
 # summed social assistance
 
-m2a <- glm(eds ~ hh_social_assist + esl_class + age + gender + doc_status
+m2a <- glm(eds ~ hh_social_assist + edu_esl + age + gender + doc_status
            + income + married.LT + race + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
 
 
@@ -46,7 +46,7 @@ exp(coef(m2a))
 m2aa <- glm(eds ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
             + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status + income + married.LT + race 
-            + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+            + edu_highest + eng_read + migrant_2 + edu_esl, data=fdata, family=binomial)
 
 summary(m2aa)
 # odds ratios
@@ -87,15 +87,17 @@ aic.test
 # ll.glm <- logLik(m2a)
 
 
-model <- (eds ~ doc_status_num + hh_social_assist + esl_class_num + age_num + gender_num + 
-             race_num + edu_highest_num + income_num + married.LT_num)
+model <- eds ~ doc_status_num + hh_social_assist + age_num + gender_num + 
+             race_num + edu_highest_num + income_num + married.LT_num + edu_esl_num
 m2a <- glm(formula=model, data=fdata, family=binomial)
 pe.glm <- m2a$coefficients
 vc.glm <- vcov(m2a) 
 ll.glm <- logLik(m2a)
 
+mdata <- extractdata(model, fdata, na.rm=TRUE)
 
-used_columns <- c('eds', 'hh_social_assist', 'esl_class_num', 'age_num', 'gender_num', 'doc_status_num',
+
+used_columns <- c('eds', 'hh_social_assist', 'age_num', 'edu_esl', 'gender_num', 'doc_status_num',
                   'income_num', 'married.LT_num', 'race_num', 'edu_highest_num')
 summary(fdata[,used_columns])
 sims <- 1e4
@@ -104,15 +106,36 @@ simbetas <- mvrnorm(sims, pe.glm2, vc.glm2)
 # Making a scenario for each type of doc status
 xhyp <- cfMake(model2, fdata, nscen=4)
 
-xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=1, scen=1)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=1, scen=1) 
 xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=2, scen=2)
 xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=3, scen=3)
 xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=4, scen=4)
 
 # run simulations
 eds_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
+
 eds_results
 
+# PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
+
+social_assistance <- c(0, 1)
+doc_status <- c(1:4)
+simVars <- expand.grid(doc_status_num=doc_status, social_assistance=social_assistance)
+nscen <- nrow(simVars)
+
+diff_sa_ds <- cfMake(model, mdata, nscen)
+for (i in 1:nscen) {
+  diff_sa_ds <- simcf::cfChange(diff_sa_ds, "doc_status_num", x=simVars$doc_status_num[i], scen=i)
+  diff_sa_ds <- simcf::cfChange(diff_sa_ds, "social_assistance", x=simVars$social_assistance[i], scen=i)
+}
+
+# Simulate expected probabilities for all scenarios
+diff_sa_ds_sims <- simcf::logitsimev(diff_sa_ds, simbetas, ci=0.95)
+ # ^ Confused, gives error for non-conformable arguments, but still seems to work
+
+pp_sa_ds_results <- cbind(simVars, data.frame(diff_sa_ds_sims))
+
+pp_sa_ds_results
 
 # POTENTIAL TO-DO: Graph expected values
 
@@ -120,8 +143,8 @@ eds_results
 
 # EPD
 
-m2b <- glm(epd ~ hh_social_assist + esl_class + age + gender + doc_status + income + married.LT + race 
-           + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+m2b <- glm(epd ~ hh_social_assist + age + gender + doc_status + income + married.LT + race 
+           + edu_highest + eng_read + migrant_2 + edu_esl, data=fdata, family=binomial)
 
 summary(m2b)
 exp(coef(m2b))
@@ -131,7 +154,7 @@ exp(coef(m2b))
 m2bb <- glm(epd ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_phealth_cl
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_li_house + hh_other
             + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status + income + married.LT + race 
-            + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+            + edu_highest + eng_read + migrant_2 + edu_esl, data=fdata, family=binomial)
 
 summary(m2bb)
 exp(coef(m2bb))
@@ -158,8 +181,8 @@ aic.test
 
 # LOW CONTROL 
 
-m2c <- glm(lowcont ~ hh_social_assist + esl_class + age + gender + doc_status + income + married.LT + race 
-           + edu_highest + eng_read + migrant_2, data=fdata, family=binomial)
+m2c <- glm(lowcont ~ hh_social_assist + age + gender + doc_status + income + married.LT + race 
+           + edu_highest + eng_read + migrant_2 + edu_esl, data=fdata, family=binomial)
 
 summary(m2c)
 exp(coef(m2c))
@@ -170,7 +193,7 @@ m2cc <- glm(lowcont ~ hh_medicaid + hh_wic + hh_unemp_ins + hh_food_stamps + hh_
             + hh_dis_rel + hh_TANF + hh_soc_sec + hh_dis_ins + hh_li_house + hh_other
             + hh_li_house + hh_gen_as + hh_vet_pay + age + doc_status
             + income + married.LT + race + edu_highest + eng_read 
-            + migrant_2, data=fdata, family=binomial)
+            + migrant_2 + edu_esl, data=fdata, family=binomial)
 
 summary(m2cc)
 exp(coef(m2cc))
