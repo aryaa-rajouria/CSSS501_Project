@@ -11,15 +11,13 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(here)
-library(gtsummary)
-library(modelsummary)
 
 # when you load MASS and dplyr select is overwritten
 
 fdata <- readRDS(here("./fdata.rds"))
 
 options(scipen = 999)
-# fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Project/fdata9.csv')
+# fdata <- read.csv('/Users/katherine/Desktop/CSSS510_group_project/CSSS510_Project/fdata10.csv')
 
 
 # _____________________________________________________________________________________________
@@ -84,7 +82,9 @@ aic.test
 
 # EXPECTED VALUES OF EDS FOR EACH DOCUMENTATION STATUS 
 
-model2 <- (eds ~ hh_social_assist + doc_status_num)
+model2 <- (eds ~ hh_social_assist + doc_status_num + edu_highest_num + age_num 
+           + gender_num + income_num + married.LT_num + race_num + eng_read_num 
+           + migrant_2_num)
            
            # + edu_esl_num + age_num + gender_num
            # + income_num + married.LT_num + race_num + edu_highest_num + eng_read_num + migrant_2_num)
@@ -98,7 +98,7 @@ mdata <- extractdata(model2, fdata, na.rm=TRUE)
 
 # checking that all variables look ok
 used_columns <- c('eds', 'hh_social_assist', 'age_num', 'edu_esl_num', 'gender_num', 'doc_status_num',
-                  'income_num', 'married.LT_num', 'race_num', 'edu_highest_num')
+                  'income_num', 'married.LT_num', 'race_num', 'edu_highest_num', 'migrant_2_num')
 summary(fdata[,used_columns])
 
 sims <- 1e4
@@ -149,6 +149,34 @@ pp_sa_ds_results %>%
   facet_grid(. ~ factor(hh_social_assist, levels=c(0,1), labels=c('No social assist', "Yes social assist"))) +
   xlab('Documentation status') +
   NULL
+
+# FIRST DIFFERENCES BETWEEN RECIEVING/NOT RECIEVING SOCIAL ASSIST FOR EACH DOC STATUS
+
+diff_sa_ds_fd <- cfMake(model2, mdata, 4)
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "doc_status_num", x=1, xpre=1, scen=1)
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=1)
+
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "doc_status_num", x=2, xpre=2, scen=2)
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=2)
+
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "doc_status_num", x=3, xpre=3, scen=3)
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=3)
+
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "doc_status_num", x=4, xpre=4, scen=4)
+diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=4)
+
+# # This last one is for all participants, regardless of doc status
+# If we use this, we'll need to change ,4 to ,5 in the first line
+# diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=5)
+
+diff_sa_ds_fd_sims <- simcf::logitsimfd(diff_sa_ds_fd, simbetas, ci=0.95)
+diff_sa_ds_fd_sims
+
+# FIGURE - FIRST DIFFERENCES
+
+# Have not figure out how to make this figure yet, but might be more interpretable 
+# to see whether there is a *significant* difference between whether they do/don't recieve
+# SA for each doc status
 
 # _____________________________________________________________________________________________
 
@@ -347,6 +375,9 @@ prop.8
 prop.9 <- with(fdata, table(doc_status, hh_social_assist)) %>%
   prop.table(margin = 1)
 prop.9
+
+
+
 
 
 
