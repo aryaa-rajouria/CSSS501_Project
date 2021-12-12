@@ -86,8 +86,6 @@ model2 <- (eds ~ hh_social_assist + doc_status_num + edu_highest_num + age_num
            + gender_num + income_num + married.LT_num + race_num + eng_read_num 
            + migrant_2_num + edu_esl_num)
            
-           # + edu_esl_num + age_num + gender_num
-           # + income_num + married.LT_num + race_num + edu_highest_num + eng_read_num + migrant_2_num)
 m2a_test <- glm(formula=model2, data=fdata, family=binomial)
 summary(m2a_test)
 pe.glm <- m2a_test$coefficients
@@ -140,7 +138,6 @@ pp_sa_ds_results
 # FIGURE - PREDICTED PROB OF EDS BY DOC STATUS AND SOCIAL ASSISTANCE (NOT RIGHT YET)
 
 pp_sa_ds_results %>%
-  # ggplot(aes(x=factor(era), y=pe, ymin=lower, ymax=upper, color=factor(winpct))) +
   ggplot(aes(x=factor(doc_status_num, levels=1:4,
                       label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
              y=pe, ymin=lower, ymax=upper)) +
@@ -171,12 +168,18 @@ diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1,
 
 diff_sa_ds_fd_sims <- simcf::logitsimfd(diff_sa_ds_fd, simbetas, ci=0.95)
 diff_sa_ds_fd_sims
+diff_sa_ds_fd_sims_df <- as.data.frame(diff_sa_ds_fd_sims)
+
 
 # FIGURE - FIRST DIFFERENCES
 
-# Have not figure out how to make this figure yet, but might be more interpretable 
-# to see whether there is a *significant* difference between whether they do/don't recieve
-# SA for each doc status
+diff_sa_ds_fd_sims_df %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') +
+  ylab('First diff of EDS w/wo Social Assist') + xlab('Documentation status') +
+  geom_hline(yintercept=0, linetype='dashed')
 
 # _____________________________________________________________________________________________
 
@@ -223,7 +226,7 @@ aic.test
 
 model3 <- (epd ~ hh_social_assist + doc_status_num + edu_highest_num + age_num 
            + gender_num + income_num + married.LT_num + race_num + eng_read_num 
-           + migrant_2_num)
+           + migrant_2_num + edu_esl_num)
 
 
 m2b_test <- glm(formula=model3, data=fdata, family=binomial)
@@ -305,10 +308,10 @@ diff_sa_ds_fd_epd <- simcf::cfChange(diff_sa_ds_fd_epd, "hh_social_assist", xpre
 
 # # This last one is for all participants, regardless of doc status
 # If we use this, we'll need to change ,4 to ,5 in the first line
-# diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd, "hh_social_assist", xpre=0, x=1, scen=5)
+# diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd_epd, "hh_social_assist", xpre=0, x=1, scen=5)
 
 diff_sa_ds_fd_epd_sims <- simcf::logitsimfd(diff_sa_ds_fd_epd, simbetas, ci=0.95)
-diff_sa_ds_fd_epd_sims_df <- as.data.frame(diff_sa_ds_fd_sims)
+diff_sa_ds_fd_epd_sims_df <- as.data.frame(diff_sa_ds_fd_epd_sims)
 
 
 # FIGURE - FIRST DIFFERENCES
@@ -359,6 +362,112 @@ aic.test <- aic.m2 - aic.m1
 aic.test
 
 # disaggregated is a better fit
+
+# _____________________________________________________________________________________________
+
+# EXPECTED VALUES OF LOW CONTROL FOR EACH DOCUMENTATION STATUS 
+
+model4 <- (lowcont ~ hh_social_assist + doc_status_num + edu_highest_num + age_num 
+           + gender_num + income_num + married.LT_num + race_num + eng_read_num 
+           + migrant_2_num + edu_esl_num)
+
+
+m2c_test <- glm(formula=model4, data=fdata, family=binomial)
+summary(m2c_test)
+pe.glm <- m2c_test$coefficients
+vc.glm <- vcov(m2c_test) 
+ll.glm <- logLik(m2c_test)
+
+mdata <- extractdata(model4, fdata, na.rm=TRUE)
+
+# checking that all variables look ok
+used_columns <- c('lowcont', 'hh_social_assist', 'age_num', 'edu_esl_num', 'gender_num', 'doc_status_num',
+                  'income_num', 'married.LT_num', 'race_num', 'edu_highest_num', 'migrant_2_num')
+summary(fdata[,used_columns])
+
+sims <- 1e4
+simbetas <- mvrnorm(sims, pe.glm, vc.glm)
+
+# Making a scenario for each type of doc status
+xhyp <- cfMake(model4, mdata, nscen=4)
+
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=1, scen=1) 
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=2, scen=2)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=3, scen=3)
+xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=4, scen=4)
+
+# run simulations
+lowcont_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
+
+lowcont_results
+
+# PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
+
+hh_social_assist <- c(0, 1)
+doc_status_num <- c(1:4)
+simVars <- expand.grid(doc_status_num=doc_status_num, hh_social_assist=hh_social_assist)
+nscen <- nrow(simVars)
+
+diff_sa_ds_lowcont <- cfMake(model4, mdata, nscen)
+for (i in 1:nscen) {
+  diff_sa_ds_lowcont <- simcf::cfChange(diff_sa_ds_lowcont, "doc_status_num", x=simVars$doc_status_num[i], scen=i)
+  diff_sa_ds_lowcont <- simcf::cfChange(diff_sa_ds, "hh_social_assist", x=simVars$hh_social_assist[i], scen=i)
+}
+simbetas[1:4,]
+# Simulate expected probabilities for all scenarios
+diff_sa_ds_lowcont_sims <- simcf::logitsimev(diff_sa_ds_lowcont, simbetas, ci=0.95)
+
+pp_sa_ds_lowcont_results <- cbind(simVars, data.frame(diff_sa_ds_lowcont_sims))
+
+pp_sa_ds_lowcont_results
+
+# FIGURE - PREDICTED PROB OF EDS BY DOC STATUS AND SOCIAL ASSISTANCE (NOT RIGHT YET)
+
+pp_sa_ds_lowcont_results %>%
+  # ggplot(aes(x=factor(era), y=pe, ymin=lower, ymax=upper, color=factor(winpct))) +
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Probability of Low control') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  facet_grid(. ~ factor(hh_social_assist, levels=c(0,1), labels=c('No social assist', "Yes social assist"))) +
+  xlab('Documentation status') +
+  NULL
+
+# FIRST DIFFERENCES BETWEEN RECIEVING/NOT RECIEVING SOCIAL ASSIST FOR EACH DOC STATUS
+
+diff_sa_ds_fd_lowcont <- cfMake(model4, mdata, 4)
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "doc_status_num", x=1, xpre=1, scen=1)
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "hh_social_assist", xpre=0, x=1, scen=1)
+
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "doc_status_num", x=2, xpre=2, scen=2)
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "hh_social_assist", xpre=0, x=1, scen=2)
+
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "doc_status_num", x=3, xpre=3, scen=3)
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "hh_social_assist", xpre=0, x=1, scen=3)
+
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "doc_status_num", x=4, xpre=4, scen=4)
+diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "hh_social_assist", xpre=0, x=1, scen=4)
+
+# # This last one is for all participants, regardless of doc status
+# If we use this, we'll need to change ,4 to ,5 in the first line
+# diff_sa_ds_fd_lowcont <- simcf::cfChange(diff_sa_ds_fd_lowcont, "hh_social_assist", xpre=0, x=1, scen=5)
+
+diff_sa_ds_fd_lowcont_sims <- simcf::logitsimfd(diff_sa_ds_fd_lowcont, simbetas, ci=0.95)
+diff_sa_ds_fd_lowcont_sims
+diff_sa_ds_fd_lowcont_sims_df <- as.data.frame(diff_sa_ds_fd_lowcont_sims)
+
+
+# FIGURE - FIRST DIFFERENCES
+
+diff_sa_ds_fd_lowcont_sims_df %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') +
+  ylab('First diff of Low Control w/wo Social Assist') + xlab('Documentation status') +
+  geom_hline(yintercept=0, linetype='dashed')
+
 
 # _____________________________________________________________________________________________
 
