@@ -633,11 +633,19 @@ fdata <- fdata %>% mutate(
 
 # Creating numeric variable called migrant_2_num
 
-fdata <- fdata %>% mutate(migrant_2_num = MIGTYPE2)
-table(fdata$migrant_2_num)
-sum(is.na(fdata$migrant_2_num))
+# fdata <- fdata %>% mutate(migrant_2_num = MIGTYPE2)
+# table(fdata$migrant_2_num)
+# sum(is.na(fdata$migrant_2_num))
 
-var_label(fdata$migrant_2) <- "Migrant type 2 numeric"
+fdata <- fdata %>% mutate(
+  migrant_2_num = case_when(
+    MIGTYPE2 =="FTC" ~ 1,
+    MIGTYPE2 =="NEWCOMER" ~ 2,
+    MIGTYPE2 =="SETTLED" ~ 3,
+    MIGTYPE2 =="SHUTTLE" ~ 4))
+
+
+var_label(fdata$migrant_2_num) <- "Migrant type 2 numeric"
 
 
 # ETHNICITY - 
@@ -1020,7 +1028,7 @@ table(fdata$married.LT_num)
 # 2337 married, 231 sep/divorced, 1122 single, 1 na
 
 
-write.csv(fdata, 'fdata9.csv')
+# write.csv(fdata, 'fdata10.csv')
 
 
 #Creating a new dataset with only the selected covariates (created above)
