@@ -115,6 +115,17 @@ eds_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
 
 eds_results
 
+# FIGURE WITH EXPECTED VALUES
+
+eds_results %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Expected value of EDS') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  xlab('Documentation status') +
+  NULL
+
 # PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
 
 hh_social_assist <- c(0, 1)
@@ -128,6 +139,7 @@ for (i in 1:nscen) {
   diff_sa_ds <- simcf::cfChange(diff_sa_ds, "hh_social_assist", x=simVars$hh_social_assist[i], scen=i)
 }
 simbetas[1:4,]
+
 # Simulate expected probabilities for all scenarios
 diff_sa_ds_sims <- simcf::logitsimev(diff_sa_ds, simbetas, ci=0.95)
 
@@ -257,6 +269,17 @@ xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=4, scen=4)
 epd_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
 
 epd_results
+
+# FIGURE WITH EXPECTED VALUES
+
+epd_results %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Expected value of EPD') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  xlab('Documentation status') +
+  NULL
 
 # PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
 
@@ -400,6 +423,15 @@ xhyp <- simcf::cfChange(xhyp, "doc_status_num", x=4, scen=4)
 lowcont_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
 
 lowcont_results
+
+lowcont_results %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Expected value of Low control') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  xlab('Documentation status') +
+  NULL
 
 # PREDICTED PROBABILITIES WITH SOCIAL ASSISTANCE AT 1 AND 0
 
