@@ -193,6 +193,58 @@ diff_sa_ds_fd_sims_df %>%
   ylab('First diff of EDS w/wo Social Assist') + xlab('Documentation status') +
   geom_hline(yintercept=0, linetype='dashed')
 
+
+# INCOME 
+
+sims <- 1e4
+simbetas <- mvrnorm(sims, pe.glm, vc.glm)
+
+# Making a scenario for each income
+xhyp <- cfMake(model2, mdata, nscen=5)
+
+xhyp <- simcf::cfChange(xhyp, "income_num", x=1, scen=1) 
+xhyp <- simcf::cfChange(xhyp, "income_num", x=2, scen=2)
+xhyp <- simcf::cfChange(xhyp, "income_num", x=3, scen=3)
+xhyp <- simcf::cfChange(xhyp, "income_num", x=4, scen=4)
+xhyp <- simcf::cfChange(xhyp, "income_num", x=5, scen=5)
+
+# run simulations
+income_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
+income_results
+
+# predicted probabilities
+income_num <- c(1:5)
+doc_status_num <- c(1:4)
+simVars <- expand.grid(doc_status_num=doc_status_num, income_num=income_num)
+nscen <- nrow(simVars)
+
+diff_inc_ds <- cfMake(model2, mdata, nscen)
+for (i in 1:nscen) {
+  diff_inc_ds <- simcf::cfChange(diff_inc_ds, "doc_status_num", x=simVars$doc_status_num[i], scen=i)
+  diff_inc_ds <- simcf::cfChange(diff_inc_ds, "income_num", x=simVars$income_num[i], scen=i)
+}
+simbetas[1:4,]
+
+# Simulate expected probabilities for all scenarios
+diff_inc_ds_sims <- simcf::logitsimev(diff_inc_ds, simbetas, ci=0.95)
+
+pp_inc_ds_results <- cbind(simVars, data.frame(diff_inc_ds_sims))
+
+pp_inc_ds_results
+
+pp_inc_ds_results %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') + ylab('Probability of EDS') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  facet_grid(. ~ factor(income_num, levels=c(1:5), labels=c('0-2,499', '2,500-9,999', '9,999-17,499',
+                                                            '17,499-29,999', '30,000'))) +
+  xlab('Documentation status') +
+  NULL
+
+
+
 # _____________________________________________________________________________________________
 
 # EPD
@@ -346,6 +398,73 @@ diff_sa_ds_fd_epd_sims_df %>%
   geom_pointrange() + xlab('doc_status') +
   ylab('First diff of EPD w/wo Social Assist') + xlab('Documentation status') +
   geom_hline(yintercept=0, linetype='dashed')
+
+# PREDICTED PROBABILITY OF EPD BY DOC STATUS AND ESL CLASSES
+
+edu_esl_num <- c(0, 1)
+doc_status_num <- c(1:4)
+simVars <- expand.grid(doc_status_num=doc_status_num, edu_esl_num=edu_esl_num)
+nscen <- nrow(simVars)
+
+diff_esl_ds_epd <- cfMake(model3, mdata, nscen)
+for (i in 1:nscen) {
+  diff_esl_ds_epd <- simcf::cfChange(diff_esl_ds_epd, "doc_status_num", x=simVars$edu_esl_num[i], scen=i)
+  diff_esl_ds_epd <- simcf::cfChange(diff_sa_ds_epd, "edu_esl_num", x=simVars$edu_esl_num[i], scen=i)
+}
+simbetas[1:4,]
+# Simulate expected probabilities for all scenarios
+diff_esl_ds_epd_sims <- simcf::logitsimev(diff_esl_ds_epd, simbetas, ci=0.95)
+
+pp_esl_ds_epd_results <- cbind(simVars, data.frame(diff_esl_ds_epd_sims))
+
+pp_esl_ds_epd_results
+
+# FIGURE - PREDICTED PROB OF EPD BY DOC STATUS AND ESL class 
+
+pp_esl_ds_epd_results %>%
+  # ggplot(aes(x=factor(era), y=pe, ymin=lower, ymax=upper, color=factor(winpct))) +
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('Documentation status') + ylab('Probability of EPD') +
+  theme(axis.text.x = element_text(angle=45, hjust=1, vjust=1)) +
+  facet_grid(. ~ factor(edu_esl_num, levels=c(0,1), labels=c('No ESL class', "Yes ESL class"))) +
+  xlab('Documentation status') +
+  NULL 
+
+# FIRST DIFFERENCES BETWEEN ESL CLASS/ NO ESL CLASS FOR EACH DOC STATUS
+
+diff_esl_ds_fd_epd <- cfMake(model3, mdata, 4)
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "doc_status_num", x=1, xpre=1, scen=1)
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "edu_esl_num", xpre=0, x=1, scen=1)
+
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "doc_status_num", x=2, xpre=2, scen=2)
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "edu_esl_num", xpre=0, x=1, scen=2)
+
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "doc_status_num", x=3, xpre=3, scen=3)
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "edu_esl_num", xpre=0, x=1, scen=3)
+
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "doc_status_num", x=4, xpre=4, scen=4)
+diff_esl_ds_fd_epd <- simcf::cfChange(diff_esl_ds_fd_epd, "edu_esl_num", xpre=0, x=1, scen=4)
+
+# # This last one is for all participants, regardless of doc status
+# If we use this, we'll need to change ,4 to ,5 in the first line
+# diff_sa_ds_fd <- simcf::cfChange(diff_sa_ds_fd_epd, "hh_social_assist", xpre=0, x=1, scen=5)
+
+diff_esl_ds_fd_epd_sims <- simcf::logitsimfd(diff_esl_ds_fd_epd, simbetas, ci=0.95)
+diff_esl_ds_fd_epd_sims_df <- as.data.frame(diff_esl_ds_fd_epd_sims)
+
+
+# FIGURE - FIRST DIFFERENCES
+
+diff_esl_ds_fd_epd_sims_df %>%
+  ggplot(aes(x=factor(doc_status_num, levels=1:4,
+                      label=c('Citizen', 'Green card', 'Other work auth', 'Unauthorized')),
+             y=pe, ymin=lower, ymax=upper)) +
+  geom_pointrange() + xlab('doc_status') +
+  ylab('First diff of EPD w/wo ESL class') + xlab('Documentation status') +
+  geom_hline(yintercept=0, linetype='dashed')
+
 
 # _____________________________________________________________________________________________
 
@@ -621,6 +740,11 @@ prop.8
 prop.9 <- with(fdata, table(doc_status, hh_social_assist)) %>%
   prop.table(margin = 1)
 prop.9
+
+# doc status and income
+prop.10 <- with(fdata, table(doc_status, income)) %>%
+  prop.table(margin = 1)
+prop.10
 
 
 
