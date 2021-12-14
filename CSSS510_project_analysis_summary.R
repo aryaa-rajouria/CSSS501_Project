@@ -91,7 +91,7 @@ m2a_table_2 <-
                              "age", "gender",
                              "race", 
                              "hh_social_assist",
-                             "income", "married.LT")) %>% 
+                             "income")) %>% 
   bold_labels() 
 
 # m2a abbreviated table 3
@@ -152,14 +152,14 @@ m2c_table_2 <-
   bold_labels() 
 
 # m2a abbreviated table 3
-m2c_table_3 <- 
-  tbl_regression(m2c,
-                 include = c("married.LT",
-                             "edu_highest",
-                             "eng_read", 
-                             "edu_esl",
-                             "migrant_2")) %>% 
-  bold_labels()  
+  m2c_table_3 <- 
+    tbl_regression(m2c,
+                   include = c("married.LT",
+                               "edu_highest",
+                               "eng_read", 
+                               "edu_esl",
+                               "migrant_2")) %>% 
+    bold_labels()  
 
 
 

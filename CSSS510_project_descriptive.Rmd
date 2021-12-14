@@ -19,12 +19,18 @@ library(gridExtra)
 library(tidyverse)
 library(ggpubr)      # arranging figures together
 library(grDevices)   # colors for figures
+library(labelled)
+library(kableExtra)
+theme_gtsummary_journal(journal = "jama")
+theme_gtsummary_compact()
+#> Setting theme `Compact`
 ```
 
 
 
 ```{r}
 df <- readRDS(here("./fdata.rds"))
+var_label(df$edu_highest) <- "Highest education"
 
 
 
@@ -34,11 +40,11 @@ df <- readRDS(here("./fdata.rds"))
 
 ```{r}
 
-df_covariate <- df %>% select(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status)
+df_covariate <- df %>% select(age, gender, race, income, edu_highest, married.LT, eng_read, edu_esl,  migrant_2, hh_social_assist, doc_status)
 
-df_outcome <- df %>% select(srh, eds, lowcont, epd)
+df_outcome <- df %>% select(eds, lowcont, epd)
 
-df_all <- df %>% select(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, srh, eds, lowcont, epd)
+df_all <- df %>% select(age, gender, race, income, edu_highest, married.LT, eng_read, edu_esl,  migrant_2, hh_social_assist, doc_status, eds, epd, lowcont)
 
 df_all <- df_all %>% mutate(Total = 1)
 ```
@@ -71,149 +77,158 @@ as_gt() %>%
 ```
 
 
-# Table of SRH by covariates
+# Descriptive table of sample 
 
 ```{r}
-df_all %>% 
+tbl_sample <- df_all %>% 
   tbl_summary(
-    by = srh,
-    percent = "row",
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
-  add_p() %>%
   bold_labels() %>%
-  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
-  add_overall(col_label = "**Overall**", last = TRUE) %>%
-modify_spanning_header(starts_with("stat_") ~ "**Self-rated health by covariates**")
+modify_spanning_header(starts_with("stat_") ~ "**Sample description**") 
+    
+tbl_sample %>%
+  as_gt %>%
+  gt::gtsave(filename="desc_sample.png", vheight=400, vwidth=400)
+
+
+
+# part 1
+tbl_sample1 <- df_all %>% 
+  tbl_summary(
+    include = c("doc_status",
+                "hh_social_assist",
+                "eds",
+                "epd",
+                "lowcont"),
+    missing = "no",
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  bold_labels() %>%
+modify_spanning_header(starts_with("stat_") ~ "**Explanatory variables and health outcomes**") 
+
+tbl_sample1 %>%
+  as_gt %>%
+  gt::gtsave(filename="desc_sample1.png")
+
+
+
+# part 2
+tbl_sample2 <- df_all %>% 
+  tbl_summary(
+    include = c("age", 
+                "gender",
+                "race",
+                "income",
+                "edu_highest",
+                "married.LT"),
+    missing = "no",
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  bold_labels() %>%
+modify_spanning_header(starts_with("stat_") ~ "**Sociodemographic characteristics**") 
+
+tbl_sample2 %>%
+  as_gt %>%
+  gt::gtsave(filename="desc_sample2.png")
+
+
+
+
+
+
+# part 2
+tbl_sample3 <- df_all %>% 
+  tbl_summary(
+    include = c("eng_read",
+                "edu_esl",
+                "migrant_2"),
+    missing = "no",
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  bold_labels() %>%
+modify_spanning_header(starts_with("stat_") ~ "**Migrant characteristics**") 
+
+tbl_sample3 %>%
+  as_gt %>%
+  gt::gtsave(filename="desc_sample3.png")
+
+
+
+
+
+
+
+
+
+final_table_full <-
+  tbl_merge(
+    tbls = list(tbl_sample1, tbl_sample1),
+    tab_spanner = c("**Explanatory variables and health outcomes**", "**Covariates**"))
+
+
+
 ```
 
 
-# Table of EDS by covariates
+# Table of chi-square
 
 ```{r}
-df_all %>% 
+chi_1 <- df_all %>% 
   tbl_summary(
-    by = eds,
-    percent = "row",
+    by = hh_social_assist,
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
+    include = c(income),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
   modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
-  add_overall(col_label = "**Overall**", last = TRUE) %>%
-modify_spanning_header(starts_with("stat_") ~ "**Elevated depressive symptoms by covariates**")
+modify_spanning_header(starts_with("stat_") ~ "**Social assistance**")
+
+chi_1
+chi_1 %>%
+  as_gt %>%
+  gt::gtsave(filename="chi_1.png")
+
 ```
 
 
-# Table of EPD by covariates
+# Table of chi-square 2
 
 ```{r}
-df_all %>% 
+chi_2 <- df_all %>% 
   tbl_summary(
-    by = epd,
-    percent = "row",
+    by = edu_esl,
     missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
+    include = c(eng_read),
     statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
   add_p() %>%
   bold_labels() %>%
   modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
-  add_overall(col_label = "**Overall**", last = TRUE) %>%
-modify_spanning_header(starts_with("stat_") ~ "**Elevated psychological demands by covariates**")
-```
+modify_spanning_header(starts_with("stat_") ~ "**ESL class**")
 
-# Table of low control by covariates
 
-```{r}
-df_all %>% 
-  tbl_summary(
-    by = lowcont,
-    percent = "row",
-    missing = "no",
-    include = c(age, gender, income, race, edu_highest, eng_read, married.LT, migrant_2, doc_status, Total),
-    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
-  add_p() %>%
-  bold_labels() %>%
-  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
-  add_overall(col_label = "**Overall**", last = TRUE) %>%
-modify_spanning_header(starts_with("stat_") ~ "**Low control by covariates**")
+chi_2
+chi_2 %>%
+  as_gt %>%
+  gt::gtsave(filename="chi_2.png")
+
 ```
 
 
 
 # Figures for poster
 
-## Self-rated health
 
-Color palette is ordered because outcome is ordered
-
-```{r}
-
-# self rated health and documented status
-temp <- subset(df_all,
-              !is.na(srh) & 
-                !is.na(doc_status))
-p1 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(srh)), aes(x=doc_status,
-              fill=as.factor(srh))) +
-  geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
-       x="",
-       fill = "SRH") +
-  coord_flip() +
-  theme_classic() +
-    theme(legend.position = "bottom", 
-          legend.title = element_blank(),
-          legend.margin=margin(0,0,0,0)) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE))  +
-   scale_fill_brewer(palette="Purples", direction=-1) 
-
-p1
-
-```
-
-
-```{r}
-
-# self rated health and gender
-
-p2 <- ggplot(data = subset(df_all, !is.na(srh)), aes(x=gender,
-              fill=as.factor(srh))) +
-  geom_bar(position="fill", na.rm=T) +
-  labs(fill = "SRH") +
-  coord_flip() +
-  theme_classic() +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
-   scale_fill_brewer(palette="Purples", direction=-1) 
-
-```
-
-
-```{r}
-
-srh_plot <- ggarrange(p1, p2, 
-          nrow=2,
-          common.legend = T,
-          legend="bottom",
-          align="v")
-
-annotate_figure(srh_plot, 
-                top = text_grob("Self-rated health",
-                                          face = "bold", size = 14))
-```
 
 
 ## Mental Health Outcomes
 
+### EDS by doc status
 
 ```{r}
 
 p3 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(eds)), aes(x=doc_status,
               fill=as.factor(eds))) +
   geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
+  labs(y = "",
        x="",
        title = "Elevated depressive symptoms",
        fill = "EDS") +
@@ -226,30 +241,14 @@ p3 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(eds)), aes(x=doc_s
 ```
 
 
-
-```{r}
-
-p4 <- ggplot(data = subset(df_all,!is.na(gender)), aes(x=gender,
-              fill=as.factor(eds))) +
-  geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
-       x="",
-       title = "Elevated depressive symptoms",
-       fill = "EDS") +
-  coord_flip() +
-  theme_classic() +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
-  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
-
-```
+### EPD by doc status
 
 ```{r}
 
 p5 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(epd)), aes(x=doc_status,
               fill=as.factor(epd))) +
   geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
+  labs(y = "",
        x="",
        title = "Elevated psychological demands",
        fill = "EPD") +
@@ -261,25 +260,7 @@ p5 <- ggplot(data = subset(df_all,!is.na(doc_status) & !is.na(epd)), aes(x=doc_s
 
 ```
 
-
-```{r}
-
-p6 <- ggplot(data = subset(df_all,!is.na(gender) & !is.na(epd)),
-             aes(x=gender,
-              fill=as.factor(epd))) +
-  geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
-       x="",
-       title = "Elevated psychological demands",
-       fill = "EPD") +
-  coord_flip() +
-  theme_classic() +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
-  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
-
-```
-
+### LC by doc status
 
 ```{r}
 
@@ -288,7 +269,7 @@ p7 <- ggplot(data = subset(df_all,
              aes(x=doc_status,
                  fill=as.factor(lowcont))) +
   geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
+  labs(y = "",
        x="",
        title = "Low control",
        fill = "Low control") +
@@ -302,47 +283,10 @@ p7 <- ggplot(data = subset(df_all,
 
 
 
-```{r}
-
-p8 <- ggplot(data = subset(df_all,!is.na(gender)), 
-             aes(x=gender,
-              fill=as.factor(lowcont))) +
-  geom_bar(position="fill", na.rm=T) +
-  labs(y = "%",
-       x="",
-       title = "Low control",
-       fill = "Low control") +
-  coord_flip() +
-  theme_classic() +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, label.position = "top", reverse=TRUE)) +
-  scale_fill_manual(values = c("snow3", "purple3"), labels = c("No", "Yes")) 
-
-```
-
-
 
 ```{r}
+#put plots together
 
-
-# data_long <- df_all %>%
-#    mutate(id = row_number()) %>%
-#   pivot_longer(
-#   cols = c("eds", "epd", "lowcont"),
-#   names_to = "mh_outcomes",
-#   values_to = "Percent")
-#   
-# ggplot(data = subset(data_long,!is.na(doc_status)), 
-#        aes(x=doc_status,
-#            y=Percent,
-#               fill=mh_outcomes)) +
-#   geom_bar(position="dodge", stat="identity") 
-
-```
-
-
-
-```{r}
 mh_plot <- ggarrange(p3, p5, p7, 
           ncol=1,
           nrow=3,
@@ -351,34 +295,31 @@ mh_plot <- ggarrange(p3, p5, p7,
           align="v")
 
 
+mh_plot
+ggsave(filename="desc_mh", plot = mh_plot)
+ggexport(mh_plot, filename = "desc_mh.png")
 
-desc_mh <- annotate_figure(mh_plot, 
-                top = text_grob("Mental Health Outcomes",
-
-                                                                          face = "bold", size = 14))
-
-desc_srh <- annotate_figure(p1, 
-                top = text_grob("Self-rated health",
-                                          face = "bold", size = 14))
-final_plot <- ggarrange(p1, desc_mh,
-          ncol=1)
-  
-desc_mh
-ggsave(filename="desc_mh", plot = desc_mh)
-ggexport(desc_mh, filename = "desc_mh.png")
-# annotate_figure(mh_plot, 
-#                 top = text_grob("Mental health outcomes",
-#                                           face = "bold", size = 14))
-
-# save plot
-png("desc_srh.png", width=450, height=180)
-# 2. Create the plot
-desc_srh
-# 3. Close the file
-dev.off()
+```
 
 
 
+### supplementary table
+
+```{r}
+
+# check 
+ df_all %>% 
+  tbl_summary(
+    by = income,
+    percent = "row",
+    missing = "no",
+    include = c(doc_status),
+    statistic = list(all_categorical() ~ "{n} ({p}%)")) %>%
+  bold_labels() %>%
+  modify_header(update = all_stat_cols() ~ "**{level}**") %>% # Remove the Ns from the header row
+  add_overall(col_label = "**Overall**", last = TRUE) %>%
+modify_spanning_header(starts_with("stat_") ~ "** Doc status by income**")
 
 
 ```
+
