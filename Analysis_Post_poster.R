@@ -244,6 +244,26 @@ pp_inc_ds_results %>%
   NULL
 
 
+# EXPECTED VALUES FOR GENDER AND EDS
+
+sims <- 1e4
+simbetas <- mvrnorm(sims, pe.glm, vc.glm)
+
+# Making a scenario for each type of doc status
+xhyp <- cfMake(model2, mdata, nscen=2)
+
+xhyp <- simcf::cfChange(xhyp, "gender_num", x=0, scen=1) 
+xhyp <- simcf::cfChange(xhyp, "gender_num", x=1, scen=2)
+
+# run simulations
+eds_gender_results <- data.frame(simcf::logitsimev(xhyp, simbetas, ci=.95))
+
+eds_gender_results
+
+
+
+
+
 
 # _____________________________________________________________________________________________
 
